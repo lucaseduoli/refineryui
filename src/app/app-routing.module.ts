@@ -1,3 +1,4 @@
+import { TableComponent } from './table/table.component';
 import { NotificationCenterComponent } from './notification-center/components/notification-center.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
@@ -48,6 +49,8 @@ const routes: Routes = [
       { path: 'settings', component: ProjectSettingsComponent, data: { name: 'ProjectSettingsComponent' } },
       { path: 'labeling', component: LabelingComponent, data: { name: 'LabelingComponent' } },
       { path: 'labeling/:sessionId', component: LabelingComponent, data: { name: 'LabelingComponent' } },
+      {path:'table',component:TableComponent, data:{name:'TableComponent'}},
+      {path:'table/:sessionId',component:TableComponent,data:{name:'TableComponent'}},
       { path: 'record-ide/:sessionId', component: RecordIDEComponent, data: { name: 'RecordIDEComponent' } },
       { path: 'knowledge-base', component: KnowledgeBasesComponent, data: { name: 'KnowledgeBasesComponent' } },
       {

@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json /app/
 RUN npm install
 COPY . /app
-RUN npm run build-prod
+RUN npm run build-prod --source-map=false
 
 FROM nginx
 COPY --from=build /app/dist/out/ /usr/share/nginx/html

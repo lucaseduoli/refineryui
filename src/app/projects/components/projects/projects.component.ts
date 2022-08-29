@@ -96,7 +96,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private router: Router,
     private auth: AuthApiService,
     private urlSanatizer: DomSanitizer
-  ) { }
+  ) {
+    console.log("project list"+ this.projectList)
+    console.log("projectId" + this.projectId)
+  }
 
   get ProjectStatusType(): typeof ProjectStatus {
     return ProjectStatus;
@@ -116,6 +119,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         if (!this.organizationInactive) {
           this.organizationName = org.name;
           this.initData();
+
         }
       });
     this.organizationApolloService.getUserInfo().pipe(first())
@@ -165,17 +169,23 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   initData() {
     let tmp;
     [this.projectListQuery$, tmp] = this.projectApolloService.getProjects();
+    console.log(tmp)
+    console.log("PROJECT LIST QUERY")
+    console.log(this.projectListQuery$)
     this.subscriptions$.push(tmp.subscribe((projectList) => {
-
+      console.log("projectList")
+      console.log(projectList)
+      // let newProjectList: Project[];
       projectList.sort((a, b) => a.name.localeCompare(b.name));
-      projectList.forEach(projectItem => {
-        if (projectItem.createdAt) {
-          projectItem.timeStamp = this.parseUTC(projectItem.createdAt);
-          const splitDateTime = projectItem.timeStamp.split(',');
-          projectItem.date = splitDateTime[0].trim();
-          projectItem.time = splitDateTime[1];
-        };
-      });
+      // newProjectList = projectList.map((projectItem) => {
+      // //   if (projectItem.createdAt) {
+      // //     projectItem.timeStamp = this.parseUTC(projectItem.createdAt);
+      // //     const splitDateTime = projectItem.timeStamp.split(',');
+      // //     projectItem.date = splitDateTime[0].trim();
+      // //     projectItem.time = splitDateTime[1];
+      // //   };
+      // //   console.log(projectItem)
+      // // });
       this.projectList = projectList.filter(a => a.status != ProjectStatus.IN_DELETION);
     }));
     [this.projectStatQuery$, tmp] = this.organizationApolloService.getOverviewStats();

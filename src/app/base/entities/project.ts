@@ -7,4 +7,7 @@ export interface Project {
   projectType: string;
   description?: string;
   numDataScaleUploaded?: number;
+  timeStamp?: string;
+  date?: string;
+  time?: string;
 }
