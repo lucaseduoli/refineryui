@@ -132,7 +132,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.isManaged = ConfigManager.getIsManaged();
         }
       });
-      this.checkIfDemoUser();
+    this.checkIfDemoUser();
   }
 
   checkIfDemoUser() {
@@ -149,7 +149,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       return;
     }
     this.isManaged = ConfigManager.getIsManaged();
-    if (!this.isManaged) {
+    if (!this.isManaged && !ConfigManager.getIsDemo()) {
       this.subscriptions$.push(this.organizationApolloService.canCreateLocalOrg().pipe(first()).subscribe((canCreateOrg) => {
         this.canCreateOrg = canCreateOrg;
 
@@ -352,10 +352,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   executeOption(value: string) {
-    if(value=='Further sample projects') {
+    if (value == 'Further sample projects') {
       window.open("https://github.com/code-kern-ai/refinery-sample-projects", "_blank");
     } else {
-      this.importSampleProject(this.isProjectInitial ? this.previousValue+' - initial' : value)
+      this.importSampleProject(this.isProjectInitial ? this.previousValue + ' - initial' : value)
     }
   }
 
