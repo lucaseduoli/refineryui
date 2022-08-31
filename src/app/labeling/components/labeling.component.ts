@@ -518,7 +518,9 @@ export class LabelingComponent implements OnInit, OnDestroy {
 
 
     //then rlas (keep open to update when nessecary)
-    if (this.recordLabelAssociations$) this.recordLabelAssociations$.unsubscribe();
+    if (this.recordLabelAssociations$){
+      this.recordLabelAssociations$.unsubscribe();
+    }
     [this.recordLabelAssociationsQuery$, this.recordLabelAssociations$] = this.recordApolloService.getRecordLabelAssociations(projectId, recordId);
     this.recordLabelAssociations$ = this.recordLabelAssociations$
       .subscribe((recordLabelAssociations) => {
@@ -733,13 +735,14 @@ export class LabelingComponent implements OnInit, OnDestroy {
       return;
     //set needed value
     for (let md of this.fullRecordData.recordLabelAssociations) {
-      if (md.returnType == InformationSourceReturnType.RETURN) continue;
-      const attributeId = md.labelingTaskLabel.labelingTask.attribute.id;
-      const taskId = md.labelingTaskLabel.labelingTask.id;
+      let newMd = {...md}
+      if (newMd.returnType == InformationSourceReturnType.RETURN) continue;
+      const attributeId = newMd.labelingTaskLabel.labelingTask.attribute.id;
+      const taskId = newMd.labelingTaskLabel.labelingTask.id;
       let att = this.getTokenizedAttribute(taskId, attributeId);
-      let t1 = this.getToken(att, md.tokenStartIdx);
-      let t2 = this.getToken(att, md.tokenEndIdx);
-      md.value = att.raw.substring(t1.posStart, t2.posEnd);
+      let t1 = this.getToken(att, newMd.tokenStartIdx);
+      let t2 = this.getToken(att, newMd.tokenEndIdx);
+      newMd.value = att.raw.substring(t1.posStart, t2.posEnd);
     }
 
     for (let md of this.fullRecordData.recordLabelAssociations) {
@@ -1125,27 +1128,30 @@ export class LabelingComponent implements OnInit, OnDestroy {
   }
 
   extendRecordLabelAssociations(rlas) {
+    console.log("rlas")
+    console.log(rlas)
     rlas.forEach((entry) => {
-      entry.sourceTypeText = labelSourceToString(entry.sourceType);
-      if (!entry.createdBy || entry.createdBy == "NULL") {
-        entry.createdBy = "NULL"
-        entry.createdByShort = '##';
-        entry.createdByName = 'NULL User';
+      let entryNew = {...entry}
+      entryNew.sourceTypeText = labelSourceToString(entryNew.sourceType);
+      if (!entryNew.createdBy || entryNew.createdBy == "NULL") {
+        entryNew.createdBy = "NULL"
+        entryNew.createdByShort = '##';
+        entryNew.createdByName = 'NULL User';
       }
-      else if (!entry.user?.firstName) {
-        entry.createdByShort = '#*';
-        entry.createdByName = 'Unkown User ID';
+      else if (!entryNew.user?.firstName) {
+        entryNew.createdByShort = '#*';
+        entryNew.createdByName = 'Unkown User ID';
       } else {
-        entry.createdByShort = entry.user.firstName[0] + entry.user.lastName[0];
-        entry.createdByName = entry.user.firstName + ' ' + entry.user.lastName;
+        entryNew.createdByShort = entryNew.user.firstName[0] + entryNew.user.lastName[0];
+        entryNew.createdByName = entryNew.user.firstName + ' ' + entryNew.user.lastName;
       }
-      if (entry.sourceType == LabelSource.INFORMATION_SOURCE) {
-        entry.dataTip =
-          informationSourceTypeToString(entry.informationSource.type, true) +
+      if (entryNew.sourceType == LabelSource.INFORMATION_SOURCE) {
+        entryNew.dataTip =
+          informationSourceTypeToString(entryNew.informationSource.type, true) +
           ': ' +
-          entry.informationSource.name;
+          entryNew.informationSource.name;
       } else {
-        entry.dataTip = labelSourceToString(entry.sourceType);
+        entryNew.dataTip = labelSourceToString(entryNew.sourceType);
       }
     });
   }
@@ -1201,6 +1207,7 @@ export class LabelingComponent implements OnInit, OnDestroy {
     this.userIcons = [];
     let loggedInUserHasRlas = false;
     for (const rla of rlas) {
+      console.log(rla)
       if (rla.isGoldStar) {
         if (!this.rlaGroupMap.has(this.GOLD_USER_ID)) {
           this.rlaGroupMap.set(this.GOLD_USER_ID, []);
@@ -1214,13 +1221,13 @@ export class LabelingComponent implements OnInit, OnDestroy {
         if (!this.rlaGroupMap.has(rla.createdBy)) {
           this.rlaGroupMap.set(rla.createdBy, []);
           loggedInUserHasRlas = loggedInUserHasRlas || rla.createdBy == this.loggedInUser.id;
-          const avatarSelector = (rla.createdByShort.charCodeAt(0) + rla.createdByShort.charCodeAt(1)) % 5;
+          // const avatarSelector = (rla.createdByShort.charCodeAt(0) + rla.createdByShort.charCodeAt(1)) % 5;
           this.userIcons.push({
             id: rla.createdBy,
             order: rla.createdBy == this.loggedInUser.id ? 1 : 2,
             initials: rla.createdByShort,
             name: rla.createdByName,
-            avatarUri: "assets/avatars/" + avatarSelector + ".png"
+            avatarUri: "assets/avatars/" + "1" + ".png"
           });
         }
         this.rlaGroupMap.get(rla.createdBy).push(rla);
@@ -1289,12 +1296,13 @@ export class LabelingComponent implements OnInit, OnDestroy {
       );
     }
     for (let e of this.overviewDisplay) {
-      const utcDate = dateAsUTCDate(new Date(e.createdAt));
-      e.createdAtText = utcDate.toLocaleString();
-      if (e.sourceType == LabelSource.INFORMATION_SOURCE) {
-        e.createdByName = e.informationSource.name;
-        e.sourceTypeText = informationSourceTypeToString(
-          e.informationSource.type,
+      let newElement ={...e}
+      const utcDate = dateAsUTCDate(new Date(newElement.createdAt));
+      newElement.createdAtText = utcDate.toLocaleString();
+      if (newElement.sourceType == LabelSource.INFORMATION_SOURCE) {
+        newElement.createdByName = newElement.informationSource.name;
+        newElement.sourceTypeText = informationSourceTypeToString(
+          newElement.informationSource.type,
           false
         );
       }
@@ -1420,7 +1428,7 @@ export class LabelingComponent implements OnInit, OnDestroy {
       )
       .pipe(first())
       .subscribe();
-      
+
   }
 
   addLabelToTask(labelingTaskId: string, labelId: string) {

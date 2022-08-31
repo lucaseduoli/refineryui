@@ -23,9 +23,10 @@ import { IntercomModule } from 'ng-intercom';
 import { NotificationCenterModule } from './notification-center/notification-center.module';
 import { RecordIDEModule } from './record-ide/record-ide.module';
 import { TableComponent } from './table/table.component';
+import { TableOptionsComponent } from './table/table-options/table-options.component';
 
 @NgModule({
-  declarations: [AppComponent, TableComponent],
+  declarations: [AppComponent, TableComponent, TableOptionsComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
