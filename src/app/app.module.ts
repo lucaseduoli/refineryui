@@ -24,10 +24,15 @@ import { NotificationCenterModule } from './notification-center/notification-cen
 import { RecordIDEModule } from './record-ide/record-ide.module';
 import { TableComponent } from './table/table.component';
 import { TableOptionsComponent } from './table/table-options/table-options.component';
+import { TbodyComponent } from './table/tbody/tbody.component';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
 
 @NgModule({
-  declarations: [AppComponent, TableComponent, TableOptionsComponent],
+  declarations: [AppComponent, TableComponent, TableOptionsComponent, TbodyComponent],
   imports: [
+    MatSortModule,
+    MatTableModule,
     BrowserModule,
     AppRoutingModule,
     BaseModule,

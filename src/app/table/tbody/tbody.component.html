@@ -1,0 +1,37 @@
+<mat-table #table [dataSource]="dataSource" (scroll)="onTableScroll($event)" matSort>
+
+  <ng-container matColumnDef="checkbox">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{"check"|titlecase}}</mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">{{dataRow.isEnable }} </mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="index">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{"index"|titlecase}}</mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">{{dataRow.index}} </mat-cell>
+  </ng-container>
+  <ng-component matColumnDef="content">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{"content"|titlecase}}</mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">{{dataRow.content}}</mat-cell>
+  </ng-component>
+  <ng-container matColumnDef="human label">
+    <mat-header-cell *matHeaderCellDef mat-sort-header> {{"human label"|titlecase}}</mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">{{dataRow.humanLabel}} </mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="predictions">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>{{"predictions"|titlecase}} </mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">{{dataRow.predictions}}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="status">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      {{"status"|titlecase}}
+    </mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">{{dataRow.status}}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="more">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>
+      {{"more"|titlecase}}
+    </mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">more </mat-cell>
+  </ng-container>
+  <mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+</mat-table>
