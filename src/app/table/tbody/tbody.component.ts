@@ -3,6 +3,7 @@ import generateData from 'src/app/base/temp/fakeData';
 import dataRow from 'src/app/base/temp/Datarow';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
+import { SelectionModel } from '@angular/cdk/collections';
 
 @Component({
   selector: 'kern-tbody',
@@ -12,6 +13,7 @@ import { MatSort } from '@angular/material/sort';
 export class TbodyComponent implements OnInit {
   displayedColumns: string[] = ['checkbox', 'index', 'content', 'human label', 'predictions', 'status', 'more'];
   dataSource: MatTableDataSource<dataRow>;
+  selection =new SelectionModel<dataRow>(true,[])
   @ViewChild(MatSort) sort: MatSort;
   total = 100000;
   private buffer = 200; // limit from bottom to trigger
@@ -31,9 +33,20 @@ export class TbodyComponent implements OnInit {
     this.getData();
   }
   getData(): void{
-    const data: dataRow[] = this.dataSource ? [...this.dataSource.data, ...generateData(10)] : generateData(10);
+    const data: dataRow[] = this.dataSource ? [...this.dataSource.data, ...generateData(15)] : generateData(15);
     this.dataSource = new MatTableDataSource(data);
     this.dataSource.sort = this.sort;
+  }
+  isAllSelected(){
+    return (this.selection.selected.length === this.dataSource.data.length)
+  }
+  masterToogle(){
+    if(this.isAllSelected()){
+      this.selection.clear()
+    }
+    else{
+      this.dataSource.data.forEach(row=>this.selection.select(row))
+    }
   }
 
 }

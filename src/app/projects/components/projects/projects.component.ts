@@ -97,8 +97,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private auth: AuthApiService,
     private urlSanatizer: DomSanitizer
   ) {
-    console.log("project list"+ this.projectList)
-    console.log("projectId" + this.projectId)
   }
 
   get ProjectStatusType(): typeof ProjectStatus {
@@ -169,12 +167,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   initData() {
     let tmp;
     [this.projectListQuery$, tmp] = this.projectApolloService.getProjects();
-    console.log(tmp)
-    console.log("PROJECT LIST QUERY")
-    console.log(this.projectListQuery$)
     this.subscriptions$.push(tmp.subscribe((projectList) => {
-      console.log("projectList")
-      console.log(projectList)
       // let newProjectList: Project[];
       projectList.sort((a, b) => a.name.localeCompare(b.name));
       // newProjectList = projectList.map((projectItem) => {

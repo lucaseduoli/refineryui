@@ -8,9 +8,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg"
     href="./assets/minimalist_logo.svg">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="node_modules/@angular/material/prebuilt-themes/indigo-pink.css" rel="stylesheet">
+  <style>    .mat-checkbox-indeterminate.mat-accent .mat-checkbox-background, .mat-checkbox-checked.mat-accent span .mat-checkbox-background {
+    background-color: rgb(255, 64, 129) !important;
+  }
+    input[type="checkbox"]{
+        visibility:hidden;
+
+    }
+  </style>
+
 </head>
 
-<body class="font-dmSans">
+<body class="font-dmSans overflow-hidden mat-typography">
   <app-root></app-root>
 </body>
 

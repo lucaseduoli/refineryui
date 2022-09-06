@@ -27,11 +27,16 @@ import { TableOptionsComponent } from './table/table-options/table-options.compo
 import { TbodyComponent } from './table/tbody/tbody.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 
 @NgModule({
   declarations: [AppComponent, TableComponent, TableOptionsComponent, TbodyComponent],
+  exports:[MatSortModule,MatCheckboxModule,MatTableModule],
   imports: [
     MatSortModule,
+    MatCheckboxModule,
     MatTableModule,
     BrowserModule,
     AppRoutingModule,
@@ -55,6 +60,7 @@ import { MatSortModule } from '@angular/material/sort';
       appId: 'jwhvb3yv', // from your Intercom config
       updateOnRouterChange: true, // will automatically run `update` on router event changes. Default: `false`
     }),
+    BrowserAnimationsModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: ExceptionInterceptor, multi: true },

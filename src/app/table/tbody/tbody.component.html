@@ -1,8 +1,20 @@
 <mat-table #table [dataSource]="dataSource" (scroll)="onTableScroll($event)" matSort>
 
   <ng-container matColumnDef="checkbox">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>{{"check"|titlecase}}</mat-header-cell>
-    <mat-cell *matCellDef="let dataRow">{{dataRow.isEnable }} </mat-cell>
+    <mat-header-cell *matHeaderCellDef>
+      <mat-checkbox [color]="primary" (change)="$event ? masterToogle() :null"
+      [checked]="selection.hasValue() && isAllSelected()"
+      [indeterminate]="selection.hasValue() && !isAllSelected()">
+
+      </mat-checkbox>
+    </mat-header-cell>
+      <mat-cell *matCellDef="let row">
+      <mat-checkbox
+      (click) = "$event.stopPropagation()"
+      (change)="$event ? selection.toggle(row):null"
+      [checked]="selection.isSelected(row)">
+      </mat-checkbox>
+    </mat-cell>
   </ng-container>
   <ng-container matColumnDef="index">
     <mat-header-cell *matHeaderCellDef mat-sort-header>{{"index"|titlecase}}</mat-header-cell>
@@ -33,5 +45,6 @@
     <mat-cell *matCellDef="let dataRow">more </mat-cell>
   </ng-container>
   <mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns"
+  (click)="selection.toggle(row)"></mat-row>
 </mat-table>
