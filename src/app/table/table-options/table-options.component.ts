@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'kern-table-options',
@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./table-options.component.scss']
 })
 export class TableOptionsComponent implements OnInit {
-
+  @Output() deleteEvent = new EventEmitter()
   constructor() { }
 
   ngOnInit(): void {

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { TableOptionsComponent } from './table-options/table-options.component';
+import { TbodyComponent } from './tbody/tbody.component';
+import { Component, OnInit, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'kern-table',
@@ -7,11 +7,15 @@ import { TableOptionsComponent } from './table-options/table-options.component';
   styleUrls: ['./table.component.scss']
 })
 export class TableComponent implements OnInit {
-
+  @ViewChild(TbodyComponent)
+  private TbodyComponent!: TbodyComponent
   constructor() { }
 
   ngOnInit(): void {
     let size: number = 32;
   }
-
+  deleteRows():void
+  {
+    this.TbodyComponent.delete();
+  }
 }
