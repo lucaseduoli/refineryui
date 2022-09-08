@@ -11,9 +11,9 @@ import { SelectionModel } from '@angular/cdk/collections';
   styleUrls: ['./tbody.component.scss']
 })
 export class TbodyComponent implements OnInit {
-  displayedColumns: string[] = ['checkbox', 'index', 'content', 'human label', 'predictions', 'status', 'more'];
+  displayedColumns: string[] = ['checkbox', 'index', 'content', 'humanLabel', 'predictions', 'status', 'more'];
   dataSource: MatTableDataSource<dataRow>;
-  selection =new SelectionModel<dataRow>(true,[])
+  selection = new SelectionModel<dataRow>(true, []);
   @ViewChild(MatSort) sort: MatSort;
   total = 100000;
   private buffer = 200; // limit from bottom to trigger
@@ -37,15 +37,15 @@ export class TbodyComponent implements OnInit {
     this.dataSource = new MatTableDataSource(data);
     this.dataSource.sort = this.sort;
   }
-  isAllSelected(){
-    return (this.selection.selected.length === this.dataSource.data.length)
+  isAllSelected(): boolean{
+    return (this.selection.selected.length === this.dataSource.data.length);
   }
-  masterToogle(){
-    if(this.isAllSelected()){
-      this.selection.clear()
+  masterToogle(): void{
+    if (this.isAllSelected()){
+      this.selection.clear();
     }
     else{
-      this.dataSource.data.forEach(row=>this.selection.select(row))
+      this.dataSource.data.forEach(row => this.selection.select(row));
     }
   }
 

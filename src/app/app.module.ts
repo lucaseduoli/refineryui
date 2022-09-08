@@ -33,7 +33,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [AppComponent, TableComponent, TableOptionsComponent, TbodyComponent],
-  exports:[MatSortModule,MatCheckboxModule,MatTableModule],
+  exports: [MatSortModule, MatCheckboxModule, MatTableModule],
   imports: [
     MatSortModule,
     MatCheckboxModule,

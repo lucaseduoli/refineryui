@@ -138,7 +138,6 @@ export class LabelingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.routeService.updateActivatedRoute(this.activatedRoute);
-
     const sessionId = this.activatedRoute.snapshot.paramMap.get("sessionId");
 
     if (!sessionId) {
@@ -175,7 +174,7 @@ export class LabelingComponent implements OnInit, OnDestroy {
     toReturn.push(...['record_deleted', 'rla_created', 'rla_deleted']);
     return toReturn;
   }
-
+  //get from graphQl project information
   prepareProject(projectId: string) {
     this.project$ = this.projectApolloService.getProjectById(projectId);
     this.subscriptions$.push(this.project$.subscribe((project) => {
@@ -281,6 +280,7 @@ export class LabelingComponent implements OnInit, OnDestroy {
     if (Number($event.target.value) % 1 != 0) $event.target.value = parseInt($event.target.value);
   }
 
+  //graphQl get user iformation from server
   prepareUser() {
     const pipeFirst = this.organizationService.getUserInfo()
       .pipe(first());
@@ -305,11 +305,15 @@ export class LabelingComponent implements OnInit, OnDestroy {
       this.sortOrder.sort((a, b) => a.order - b.order);
       this.applyColumnOrder();
     }));
+    console.log("PIPE FIRST")
+    console.log(pipeFirst)
     return pipeFirst;
   }
-
+  //fetching labels from server
   prepareLabelingTask(projectID: string) {
     [this.labelingTasksQuery$, this.labelingTasks$] = this.projectApolloService.getLabelingTasksByProjectId(projectID);
+    console.log("this.labeling tasks")
+    console.log(this.labelingTasks$)
     this.subscriptions$.push(this.labelingTasks$.subscribe((tasks) => {
       tasks.sort((a, b) => this.compareOrderLabelingTasks(a, b)) //ensure same position
 
@@ -322,6 +326,10 @@ export class LabelingComponent implements OnInit, OnDestroy {
           });
           this.labelingTasksMap.get(task.id).labels = task.labels;
         });
+        console.log("LabelHotKey")
+        console.log(this.labelHotkeys)
+        console.log("LabelingTaskMap")
+        console.log(this.labelingTasksMap)
       } else {
         this.labelingTasksMap.clear();
         this.showTokenDisabled = true;
