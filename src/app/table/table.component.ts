@@ -18,4 +18,7 @@ export class TableComponent implements OnInit {
   {
     this.TbodyComponent.delete();
   }
+  duplicateRows(): void{
+    this.TbodyComponent.duplicate();
+  }
 }

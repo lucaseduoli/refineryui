@@ -58,4 +58,15 @@ export class TbodyComponent implements OnInit {
     this.dataSource._updateChangeSubscription();
     this.dataSource.sort = this.sort;
   }
+
+  duplicate(): void{
+    this.selection.selected.forEach(item=>{
+      let index: number = this.dataSource.data.findIndex(data=>data==item);
+      this.dataSource.data.splice(index, 0 , {...item});
+    });
+    this.selection.clear();
+    this.dataSource._updateChangeSubscription();
+    this.dataSource.sort = this.sort;
+  }
+  
 }

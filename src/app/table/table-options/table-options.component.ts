@@ -6,7 +6,8 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./table-options.component.scss']
 })
 export class TableOptionsComponent implements OnInit {
-  @Output() deleteEvent = new EventEmitter()
+  @Output() deleteEvent = new EventEmitter();
+  @Output() duplicateEvent = new EventEmitter();
   constructor() { }
 
   ngOnInit(): void {
