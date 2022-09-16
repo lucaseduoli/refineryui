@@ -313,7 +313,8 @@ export class LabelingComponent implements OnInit, OnDestroy {
   prepareLabelingTask(projectID: string) {
     [this.labelingTasksQuery$, this.labelingTasks$] = this.projectApolloService.getLabelingTasksByProjectId(projectID);
     console.log("this.labeling tasks")
-    console.log(this.labelingTasks$)
+    // console.log(this.labelingTasks$)
+    this.labelingTasks$.subscribe(e=>console.log(e))
     this.subscriptions$.push(this.labelingTasks$.subscribe((tasks) => {
       tasks.sort((a, b) => this.compareOrderLabelingTasks(a, b)) //ensure same position
 
@@ -887,6 +888,8 @@ export class LabelingComponent implements OnInit, OnDestroy {
   }
 
   nextRecord() {
+    console.log("full recordData")
+    console.log(this.fullRecordData);
     this.sessionData.currentPos++;
     this.jumpToPosition(this.project.id, this.sessionData.currentPos);
   }

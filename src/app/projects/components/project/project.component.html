@@ -3,7 +3,7 @@
     </kern-sidebar-pm>
     <div class="h-full w-full flex flex-col">
         <ng-container *ngIf="project$ | async as project">
-            <kern-header 
+            <kern-header
                 [user]="user$ | async"
                 [project]="project"
                 [avatarUri]="avatarUri"

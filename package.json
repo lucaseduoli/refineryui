@@ -1,6 +1,14 @@
 {
   "name": "kern-frontspine",
   "version": "0.0.0",
+  "watch":{
+    "build":{
+      "patterns":[
+        "src"
+      ],
+      "extensions":"ts,html,scss"
+    }
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +17,8 @@
     "build-prod": "ng build --prod --aot --build-optimizer --outputPath=./dist/out",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "watch": "npm-watch"
   },
   "private": true,
   "dependencies": {
@@ -46,6 +55,7 @@
     "ngx-highlightjs": "^4.1.4",
     "ngx-infinite-scroll": "^10.0.1",
     "ngx-monaco-editor": "^12.0.0",
+    "npm-watch": "^0.11.0",
     "rxjs": "~6.6.0",
     "tailwindcss": "^2.1.1",
     "tslib": "^2.0.0",

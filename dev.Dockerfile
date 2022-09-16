@@ -1,11 +1,12 @@
-FROM node:16-alpine
+FROM node:14-alpine
 
-WORKDIR /app
+# WORKDIR /app
 
-VOLUME ["/app"]
+# VOLUME ["/app"]
 
-COPY package*.json /app/
+# COPY package*.json /app/
 
-RUN npm install --also=dev
+# RUN npm install --include=dev
 
-ENTRYPOINT /usr/local/bin/npm run start -- --host=0.0.0.0 --port=80 --disable-host-check --serve-path="/"
+# ENTRYPOINT /usr/local/bin/npm run start -- --host=0.0.0.0 --port=80 --disable-host-check --serve-path="/"
+CMD [“/bin/sh”]

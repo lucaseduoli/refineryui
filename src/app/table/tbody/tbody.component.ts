@@ -1,9 +1,10 @@
 import { MatTableDataSource } from '@angular/material/table';
 import generateData from 'src/app/base/temp/fakeData';
 import dataRow from 'src/app/base/temp/Datarow';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { SelectionModel } from '@angular/cdk/collections';
+import { Column } from 'src/app/base/entities/table-column';
 
 @Component({
   selector: 'kern-tbody',
@@ -14,6 +15,7 @@ export class TbodyComponent implements OnInit {
   displayedColumns: string[] = ['checkbox', 'index', 'content', 'humanLabel', 'predictions', 'status', 'more'];
   dataSource: MatTableDataSource<dataRow>;
   selection = new SelectionModel<dataRow>(true, []);
+  @Input() columns: Column[];
   @ViewChild(MatSort) sort: MatSort;
   total = 100000;
   private buffer = 200; // limit from bottom to trigger
@@ -27,10 +29,10 @@ export class TbodyComponent implements OnInit {
       this.getData();
     }
   }
-  constructor() { }
-
+  constructor(){}
   ngOnInit(): void {
     this.getData();
+    console.log(this.columns);
   }
   getData(): void{
     const data: dataRow[] = this.dataSource ? [...this.dataSource.data, ...generateData(15)] : generateData(15);
@@ -49,9 +51,9 @@ export class TbodyComponent implements OnInit {
     }
   }
   delete(): void{
-    this.selection.selected.forEach(item=>{
-      let index: number = this.dataSource.data.findIndex(data=>data==item);
-      this.dataSource.data.splice(index,1);
+    this.selection.selected.forEach(item => {
+      const index: number = this.dataSource.data.findIndex(data => data === item);
+      this.dataSource.data.splice(index, 1);
     });
     this.getData();
     this.selection.clear();
@@ -60,13 +62,12 @@ export class TbodyComponent implements OnInit {
   }
 
   duplicate(): void{
-    this.selection.selected.forEach(item=>{
-      let index: number = this.dataSource.data.findIndex(data=>data==item);
+    this.selection.selected.forEach(item => {
+      const index: number = this.dataSource.data.findIndex(data => data === item);
       this.dataSource.data.splice(index, 0 , {...item});
     });
     this.selection.clear();
     this.dataSource._updateChangeSubscription();
     this.dataSource.sort = this.sort;
   }
-  
 }

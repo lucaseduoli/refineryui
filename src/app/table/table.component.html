@@ -3,7 +3,7 @@
       <kern-table-options (deleteEvent)="deleteRows()" (duplicateEvent)="duplicateRows()"></kern-table-options>
       <div class="w-full overflow-x-scroll xl:overflow-x-hidden">
           <div class="min-w-full bg-white max-h-full dark:bg-gray-800 overflow-hidden">
-              <kern-tbody style="max-height: 100%;"></kern-tbody>
+              <kern-tbody [columns]="Columns" style="max-height: 100%;"></kern-tbody>
           </div>
       </div>
   </div>
