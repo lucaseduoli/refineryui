@@ -22,6 +22,7 @@
     cdkDragBoundary="mat-header-row"
     cdkDrag
     disabled="{{!column.isSort}}"
+    ngClass="{{column.classStyle}}"
     >
       {{column.header|titlecase}}
     </mat-header-cell>
