@@ -29,15 +29,17 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 
 @NgModule({
   declarations: [AppComponent, TableComponent, TableOptionsComponent, TbodyComponent],
-  exports: [MatSortModule, MatCheckboxModule, MatTableModule],
+  exports: [MatSortModule, MatCheckboxModule, MatTableModule, DragDropModule],
   imports: [
     MatSortModule,
     MatCheckboxModule,
     MatTableModule,
+    DragDropModule,
     BrowserModule,
     AppRoutingModule,
     BaseModule,

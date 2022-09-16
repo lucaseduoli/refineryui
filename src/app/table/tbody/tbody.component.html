@@ -1,4 +1,4 @@
-<mat-table #table [dataSource]="dataSource" (scroll)="onTableScroll($event)" matSort>
+<mat-table #table cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="columnDropped($event)" [dataSource]="dataSource" (scroll)="onTableScroll($event)" matSort>
 
   <ng-container matColumnDef="checkbox">
     <mat-header-cell *matHeaderCellDef>
@@ -16,7 +16,22 @@
       </mat-checkbox>
     </mat-cell>
   </ng-container>
-  <ng-container matColumnDef="index">
+  <ng-container *ngFor="let column of columns;let i=index" [matColumnDef]="column.columnDef">
+    <mat-header-cell *matHeaderCellDef mat-sort-header
+    cdkDragLockAxis="x"
+    cdkDragBoundary="mat-header-row"
+    cdkDrag
+    disabled="{{!column.isSort}}"
+    >
+      {{column.header|titlecase}}
+    </mat-header-cell>
+    <mat-cell *matCellDef="let dataRow">
+      {{dataRow[column.columnDef]?? "sample test"}}
+    </mat-cell>
+  </ng-container>
+
+
+  <!-- <ng-container matColumnDef="index">
     <mat-header-cell *matHeaderCellDef mat-sort-header>{{"index"|titlecase}}</mat-header-cell>
     <mat-cell *matCellDef="let dataRow">{{dataRow.index}} </mat-cell>
   </ng-container>
@@ -43,7 +58,7 @@
       {{"more"|titlecase}}
     </mat-header-cell>
     <mat-cell *matCellDef="let dataRow">more </mat-cell>
-  </ng-container>
+  </ng-container> -->
   <mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></mat-header-row>
   <mat-row *matRowDef="let row; columns: displayedColumns"
   (click)="selection.toggle(row)"></mat-row>
