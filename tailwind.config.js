@@ -86,9 +86,10 @@ module.exports = {
       kerngreen: {
         DEFAULT: "#7BED8D"
       },
-      kernindigo: {
+      kernindigo:
+      {
         DEFAULT: "#0C052E",
-        dark: "#06023b",
+        dark: "#1B1F24",
         darker: "#4F46E5",
         "darker-1": "#312E81",
         light: "#EEF2FF",

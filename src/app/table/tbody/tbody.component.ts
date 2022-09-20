@@ -9,7 +9,7 @@ import { OrganizationApolloService } from 'src/app/base/services/organization/or
 import { RecordApolloService } from 'src/app/base/services/record/record-apollo.service';
 import { ProjectApolloService } from '../../base/services/project/project-apollo.service';
 import { first } from 'rxjs/operators';
-import { Observable, Subscription,forkJoin} from 'rxjs';
+import { Observable, Subscription, forkJoin} from 'rxjs';
 import { RouteService } from 'src/app/base/services/route.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from 'src/app/base/entities/project';
@@ -21,7 +21,15 @@ import {moveItemInArray, CdkDragDrop} from '@angular/cdk/drag-drop';
   templateUrl: './tbody.component.html',
   styleUrls: ['./tbody.component.scss']
 })
+
 export class TbodyComponent implements OnInit {
+  constructor(    private projectApolloService: ProjectApolloService,
+                  private recordApolloService: RecordApolloService,
+                  private organizationService: OrganizationApolloService,
+                  private router: Router,
+                  private routeService: RouteService,
+                  private activatedRoute: ActivatedRoute){}
+  static DUMMY_SESSION_ID = "00000000-0000-0000-0000-000000000000";
   displayedColumns: string[] = ['checkbox'];
   dataSource: MatTableDataSource<dataRow>;
   selection = new SelectionModel<dataRow>(true, []);
@@ -44,6 +52,9 @@ export class TbodyComponent implements OnInit {
   labelingTaskWait: boolean;
   labelingTaskColumns=[];
   columns:Column[];
+  sessionData:any;
+  session$:any;
+
 
 
   onTableScroll(e: any): void {
@@ -55,12 +66,6 @@ export class TbodyComponent implements OnInit {
       this.getData();
     }
   }
-  constructor(    private projectApolloService: ProjectApolloService,
-                  private recordApolloService: RecordApolloService,
-                  private organizationService: OrganizationApolloService,
-                  private router: Router,
-                  private routeService: RouteService,
-                  private activatedRoute: ActivatedRoute){}
 
   ngOnInit(): void {
     this.routeService.updateActivatedRoute(this.activatedRoute);
@@ -71,13 +76,15 @@ export class TbodyComponent implements OnInit {
     initialTasks$.push(this.prepareSortOrder(projectId));
     initialTasks$.push(this.getLabelingTasks(projectId));
     forkJoin(initialTasks$).pipe(first()).subscribe(e=>{
-      // console.log(e);
+      this.requestSessionData(projectId,TbodyComponent.DUMMY_SESSION_ID).then(()=>{
+        console.log(this.sessionData);
+      })
       this.columns = this.generateColumns();
       console.log(this.columns);
-      this.displayedColumns.push(...this.columns.map(e => e.columnDef));
+      this.displayedColumns.push(...this.columns.map( element => element.columnDef));
       if(this.displayedColumns.length > 7){
         this.displayedColumns = [];
-        window.alert("Error, there are too many datapoints to handle")
+        window.alert("Error, there are too many datapoints to handle");
       }
       this.getData();
     });
@@ -255,5 +262,18 @@ export class TbodyComponent implements OnInit {
 
   }
 
-
+  async requestSessionData (projectId: string, sessionId: string){
+    const requestedPos = 0;
+    let result = await this.recordApolloService.getSessionBySessionId(projectId, sessionId)
+      .pipe(first()).toPromise();
+    this.sessionData = {
+      recordIds: result.sessionRecordIds as string[],
+      partial: false,
+      sessionId: result.sessionId,
+      currentPos: requestedPos,
+      projectId: projectId,
+    };
+    // localStorage.setItem('sessionData', JSON.stringify(this.sessionData));
+    console.log(this.sessionData);
+  }
 }
