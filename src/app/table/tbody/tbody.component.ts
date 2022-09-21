@@ -1,8 +1,7 @@
 import { MatTableDataSource } from '@angular/material/table';
 import generateData from 'src/app/base/temp/fakeData';
-import dataRow from 'src/app/base/temp/Datarow';
 import { MatSort } from '@angular/material/sort';
-import { SelectionModel } from '@angular/cdk/collections';
+import { DataSource, SelectionModel } from '@angular/cdk/collections';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Column, ColumnType, DataType } from '../../base/entities/table-column';
 import { OrganizationApolloService } from 'src/app/base/services/organization/organization-apollo.service';
@@ -28,12 +27,15 @@ export class TbodyComponent implements OnInit {
                   private organizationService: OrganizationApolloService,
                   private router: Router,
                   private routeService: RouteService,
-                  private activatedRoute: ActivatedRoute){}
+                  private activatedRoute: ActivatedRoute)
+                  {
+                    this.dataSource = new MatTableDataSource();
+                  }
   static DUMMY_SESSION_ID = "00000000-0000-0000-0000-000000000000";
   displayedColumns: string[] = ['checkbox'];
-  dataSource: MatTableDataSource<dataRow>;
-  selection = new SelectionModel<dataRow>(true, []);
-  @ViewChild(MatSort) sort: MatSort;
+  dataSource: MatTableDataSource<any>;
+  selection = new SelectionModel<any>(true, []);
+  @ViewChild(MatSort) sort: MatSort= new MatSort();
   total = 100000;
   private buffer = 200; // limit from bottom to trigger
 
@@ -50,20 +52,22 @@ export class TbodyComponent implements OnInit {
   labelHotkeys: Map<string, { taskId: string, labelId: string }> = new Map<string, { taskId: string, labelId: string }>();
   showTokenDisabled = true;
   labelingTaskWait: boolean;
-  labelingTaskColumns=[];
-  columns:Column[];
-  sessionData:any;
-  session$:any;
+  labelingTaskColumns = [];
+  columns: Column[];
+  sessionData: any;
+  session$: any;
+  recordList$ = [];
 
 
 
-  onTableScroll(e: any): void {
+  async onTableScroll(e: any): Promise<void> {
+    console.log("scroll event");
     const tableViewHeight = e.target.offsetHeight; // viewport
     const tableScrollHeight = e.target.scrollHeight; // lenght of all table
     const scrollLocation = e.target.scrollTop; // how far was the scroll
     const limit = tableScrollHeight - tableViewHeight - this.buffer;
     if (scrollLocation > limit && this.dataSource.data.length < this.total){
-      this.getData();
+      await this.concatData();
     }
   }
 
@@ -75,18 +79,17 @@ export class TbodyComponent implements OnInit {
     initialTasks$.push(this.prepareProject(projectId));
     initialTasks$.push(this.prepareSortOrder(projectId));
     initialTasks$.push(this.getLabelingTasks(projectId));
-    forkJoin(initialTasks$).pipe(first()).subscribe(e=>{
-      this.requestSessionData(projectId,TbodyComponent.DUMMY_SESSION_ID).then(()=>{
-        console.log(this.sessionData);
-      })
+    forkJoin(initialTasks$).pipe(first()).subscribe(e => {
+      this.requestSessionData(projectId, TbodyComponent.DUMMY_SESSION_ID).then(() => {
+        // console.log(this.sessionData.recordIds);
+      this.concatData();
+      });
       this.columns = this.generateColumns();
-      console.log(this.columns);
       this.displayedColumns.push(...this.columns.map( element => element.columnDef));
-      if(this.displayedColumns.length > 7){
+      if (this.displayedColumns.length > 7){
         this.displayedColumns = [];
         window.alert("Error, there are too many datapoints to handle");
       }
-      this.getData();
     });
     // initialTasks$.push(this.prepareProject(projectId));
     // initialTasks$.push(this.prepareLabelingTask(projectId));
@@ -96,11 +99,37 @@ export class TbodyComponent implements OnInit {
   }
 
 
-  getData(): void{
-    const data: dataRow[] = this.dataSource ? [...this.dataSource.data, ...generateData(15)] : generateData(15);
+  async concatData(): Promise<void>{
+    let data: any[];
+    if (this.dataSource)
+     {
+        data = [...this.dataSource.data, await this.getDataServer(15, this.project.id)];
+     }
+     else
+     {
+      data = await this.getDataServer(15, this.project.id);
+     }
     this.dataSource = new MatTableDataSource(data);
-    this.dataSource.sort = this.sort;
+    this.dataSource.sort = new MatSort();
   }
+  async getDataServer(requestNum: number, projectId: string): Promise<Array<any>> {
+    if (requestNum < 1){
+      return [];
+    }
+    const recordList = [];
+    for ( let i = this.sessionData.currentIndex; i < requestNum; i++){
+      // this.recordApolloService.getRecordByRecordId(projectId,this.sessionData.recordIds[i]).subscribe(e=>console.log(e))
+      const pipeFirst = this.recordApolloService.getRecordByRecordId(projectId, this.sessionData.recordIds[i]).pipe(first());
+      pipeFirst.subscribe(e => recordList.push(e));
+      this.recordList$.push(pipeFirst);
+    }
+
+    await forkJoin(this.recordList$).pipe(first()).toPromise();
+    this.sessionData.currentIndex += requestNum;
+    return recordList;
+
+  }
+
   isAllSelected(): boolean{
     return (this.selection.selected.length === this.dataSource.data.length);
   }
@@ -117,7 +146,7 @@ export class TbodyComponent implements OnInit {
       const index: number = this.dataSource.data.findIndex(data => data === item);
       this.dataSource.data.splice(index, 1);
     });
-    this.getData();
+    this.concatData();
     this.selection.clear();
     this.dataSource._updateChangeSubscription();
     this.dataSource.sort = this.sort;
@@ -161,27 +190,27 @@ export class TbodyComponent implements OnInit {
     return this.project$.pipe(first());
   }
 
-  prepareSortOrder(projectId: string) : Observable<any> {
+  prepareSortOrder(projectId: string): Observable<any> {
     let vc$;
     [this.attributesQuery$, vc$] = this.projectApolloService.getAttributesByProjectId(projectId);
     const pipeFirst = vc$.pipe(first());
 
     this.subscriptions$.push(vc$.subscribe((attributes) => {
       attributes.forEach((att) => {
-        //data loss, lost referenced Id, dataType and isPrimaryKey
+        // data loss, lost referenced Id, dataType and isPrimaryKey
         this.sortOrder.push({ key: att.name, order: att.relativePosition, dataType: att.DataType });
       });
       this.sortOrder.sort((a, b) => a.order - b.order);
       // this.applyColumnOrder();
     }));
-    console.log("PIPE FIRST")
-    console.log(pipeFirst)
+    console.log("PIPE FIRST");
+    console.log(pipeFirst);
     return pipeFirst;
   }
 
-  prepareLabelingTask(projectID: string) {
+  prepareLabelingTask(projectID: string): any {
     [this.labelingTasksQuery$, this.labelingTasks$] = this.projectApolloService.getLabelingTasksByProjectId(projectID);
-    console.log("this.labeling tasks")
+    console.log("this.labeling tasks");
     // console.log(this.labelingTasks$)
     // this.labelingTasks$.subscribe(e=>console.log(e))
     // this.subscriptions$.push(this.labelingTasks$.subscribe((tasks) => {
@@ -218,27 +247,28 @@ export class TbodyComponent implements OnInit {
     return this.labelingTasks$.pipe(first());
   }
 
-  getLabelingTasks(projectID: string):Observable<any>{
+  getLabelingTasks(projectID: string): Observable<any>{
     [this.labelingTasksQuery$, this.labelingTasks$] = this.projectApolloService.getLabelingTasksByProjectId(projectID);
-    this.labelingTasks$.subscribe((tasks)=>{
+    this.labelingTasks$.subscribe((tasks) => {
       tasks.forEach(element => {
-        if(element.taskType==="MULTICLASS_CLASSIFICATION")
+        if (element.taskType === "MULTICLASS_CLASSIFICATION")
         {
           this.labelingTaskColumns.push(element);
         }
       });
-    })
+    });
     return this.labelingTasks$.pipe(first());
 
   }
 
-  generateColumns(){
-    let columns: Column[] = [];
-    this.sortOrder.forEach((attribute)=>{
+  generateColumns(): Array<any>{
+    const columns: Column[] = [];
+    this.sortOrder.forEach((attribute) => {
+      console.log(attribute);
       columns.push({
         columnDef: attribute.key as string,
         header: attribute.key as string,
-        isSort: attribute.dataType as boolean,
+        isSort: true,
         isPrimaryKey: false,
         classStyle: "attribute " + attribute.key,
         columnType: ColumnType.DATA_POINT,
@@ -262,18 +292,18 @@ export class TbodyComponent implements OnInit {
 
   }
 
-  async requestSessionData (projectId: string, sessionId: string){
+  async requestSessionData(projectId: string, sessionId: string): Promise<void> {
     const requestedPos = 0;
-    let result = await this.recordApolloService.getSessionBySessionId(projectId, sessionId)
+    const result = await this.recordApolloService.getSessionBySessionId(projectId, sessionId)
       .pipe(first()).toPromise();
     this.sessionData = {
       recordIds: result.sessionRecordIds as string[],
       partial: false,
       sessionId: result.sessionId,
-      currentPos: requestedPos,
+      currentIndex: requestedPos,
       projectId: projectId,
     };
     // localStorage.setItem('sessionData', JSON.stringify(this.sessionData));
-    console.log(this.sessionData);
+    // console.log(this.sessionData);
   }
 }
