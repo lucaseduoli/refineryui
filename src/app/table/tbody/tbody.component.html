@@ -10,7 +10,6 @@
     </mat-header-cell>
       <mat-cell *matCellDef="let row">
       <mat-checkbox
-      (click) = "$event.stopPropagation()"
       (change)="$event ? selection.toggle(row):null"
       [checked]="selection.isSelected(row)">
       </mat-checkbox>
@@ -24,14 +23,32 @@
     disabled="{{!column.isSort}}"
     ngClass="{{column.classStyle}}"
     >
-      {{column.header|titlecase}}
+      {{column.columnDef|titlecase}}
     </mat-header-cell>
     <mat-cell *matCellDef="let dataRow">
-      {{dataRow.data[column.columnDef]?? "sample test"}}
+    <ng-container *ngIf="dataRow[column.columnDef]!==undefined;else taskLabel">
+        {{dataRow[column.columnDef]}}
+    </ng-container>
+    <ng-template #taskLabel>
+      <ng-container *ngFor="let label of column.labels">
+        <div class="flex flex-grow items-center">
+          <!--first N options as buttons-->
+          <div class="flex flex-row">
+              <button (click)="labelClick(dataRow)"
+              [ngClass]="[getBackground(label.color), getText(label.color), getBorder(label.color), getHover(label.color)]"
+                  class="text-sm font-medium mr-3 px-2 py-0.5 rounded-md border">
+                  <label
+                      class="leading-5 truncate max-w-xs cursor-pointer mx-4">{{label.name}}
+                  </label>
+              </button>
+          </div>
+          </div>
+        </ng-container>
+    </ng-template>
     </mat-cell>
   </ng-container>
 
   <mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></mat-header-row>
   <mat-row *matRowDef="let row; columns: displayedColumns"
-  (click)="selection.toggle(row)"></mat-row>
+  ></mat-row>
 </mat-table>

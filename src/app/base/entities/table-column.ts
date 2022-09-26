@@ -7,6 +7,8 @@ export interface Column{
   columnType: ColumnType;
   dataType: DataType;
   parent?: any;
+  labels?: any;
+  id: number;
 }
 
 export enum ColumnType{
@@ -21,6 +23,4 @@ export enum DataType{
   FLOAT= "FLOAT",
   BOOLEAN= "BOOLEAN",
   UNKNOWN= "UNKNOWN"
-
-
 }

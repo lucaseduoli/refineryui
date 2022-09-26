@@ -84,15 +84,15 @@ module.exports = {
       pink: colors.pink,
       rose: colors.rose,
       kerngreen: {
-        DEFAULT: "#7BED8D"
+        DEFAULT: "#8CF3C3"
       },
       kernindigo:
       {
-        DEFAULT: "#0C052E",
+        DEFAULT: "#2A2340",
         dark: "#1B1F24",
-        darker: "#4F46E5",
+        darker: "#747C92",
         "darker-1": "#312E81",
-        light: "#EEF2FF",
+        light: "#EDF7F6",
         "dark-1": "#0000F5",
         "dark-2": "#4338CA"
       },

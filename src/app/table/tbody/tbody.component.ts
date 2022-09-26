@@ -13,6 +13,7 @@ import { RouteService } from 'src/app/base/services/route.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from 'src/app/base/entities/project';
 import {moveItemInArray, CdkDragDrop} from '@angular/cdk/drag-drop';
+import { DataBrowserComponent } from 'src/app/data/components/data-browser/data-browser.component';
 
 
 @Component({
@@ -35,9 +36,9 @@ export class TbodyComponent implements OnInit {
   displayedColumns: string[] = ['checkbox'];
   dataSource: MatTableDataSource<any>;
   selection = new SelectionModel<any>(true, []);
-  @ViewChild(MatSort) sort: MatSort= new MatSort();
+  @ViewChild(MatSort) sort: MatSort = new MatSort();
   total = 100000;
-  private buffer = 200; // limit from bottom to trigger
+  private buffer = 100; // limit from bottom to trigger
 
   loggedInUser: any;
   displayUserId: any;
@@ -57,11 +58,13 @@ export class TbodyComponent implements OnInit {
   sessionData: any;
   session$: any;
   recordList$ = [];
+  scrollLock = false;
 
 
 
   async onTableScroll(e: any): Promise<void> {
-    console.log("scroll event");
+    // console.log("scroll event");
+    // console.log(this.dataSource.data);
     const tableViewHeight = e.target.offsetHeight; // viewport
     const tableScrollHeight = e.target.scrollHeight; // lenght of all table
     const scrollLocation = e.target.scrollTop; // how far was the scroll
@@ -69,9 +72,12 @@ export class TbodyComponent implements OnInit {
     if (scrollLocation > limit && this.dataSource.data.length < this.total){
       await this.concatData();
     }
+    // console.log(this.dataSource.data);
   }
 
   ngOnInit(): void {
+    // console.log("on init");
+    // console.log(this.dataSource.data);
     this.routeService.updateActivatedRoute(this.activatedRoute);
     const projectId = this.activatedRoute.parent.snapshot.paramMap.get("projectId");
     const initialTasks$ = [];
@@ -80,51 +86,61 @@ export class TbodyComponent implements OnInit {
     initialTasks$.push(this.prepareSortOrder(projectId));
     initialTasks$.push(this.getLabelingTasks(projectId));
     forkJoin(initialTasks$).pipe(first()).subscribe(e => {
+      // console.log("after fork join");
+      // console.log(e);
       this.requestSessionData(projectId, TbodyComponent.DUMMY_SESSION_ID).then(() => {
-        // console.log(this.sessionData.recordIds);
+      // console.log(this.sessionData);
+      // console.log(this.dataSource.data);
       this.concatData();
       });
       this.columns = this.generateColumns();
+      // console.log("columns");
+      // console.log(this.columns);
       this.displayedColumns.push(...this.columns.map( element => element.columnDef));
       if (this.displayedColumns.length > 7){
         this.displayedColumns = [];
         window.alert("Error, there are too many datapoints to handle");
       }
     });
-    // initialTasks$.push(this.prepareProject(projectId));
-    // initialTasks$.push(this.prepareLabelingTask(projectId));
-    // initialTasks$.push(this.prepareSortOrder(projectId));
-
-    // console.log(this.columns);
   }
 
 
   async concatData(): Promise<void>{
     let data: any[];
+    // console.log("concat Data");
+    // console.log(this.dataSource.data);
     if (this.dataSource)
      {
-        data = [...this.dataSource.data, await this.getDataServer(15, this.project.id)];
+        data = [...this.dataSource.data, ...(await this.getDataServer(15, this.project.id))];
      }
      else
      {
       data = await this.getDataServer(15, this.project.id);
      }
+    // console.log("new server data");
+    // console.log(data);
     this.dataSource = new MatTableDataSource(data);
-    this.dataSource.sort = new MatSort();
+    this.scrollLock = false;
+    this.dataSource.sort = this.sort;
   }
   async getDataServer(requestNum: number, projectId: string): Promise<Array<any>> {
-    if (requestNum < 1){
+    // console.log(this.sessionData.currentIndex);
+    if (requestNum < 1 || this.scrollLock){
       return [];
     }
     const recordList = [];
-    for ( let i = this.sessionData.currentIndex; i < requestNum; i++){
+    this.scrollLock = true;
+    for ( let i = this.sessionData.currentIndex; i < this.sessionData.currentIndex + requestNum; i++){
       // this.recordApolloService.getRecordByRecordId(projectId,this.sessionData.recordIds[i]).subscribe(e=>console.log(e))
       const pipeFirst = this.recordApolloService.getRecordByRecordId(projectId, this.sessionData.recordIds[i]).pipe(first());
-      pipeFirst.subscribe(e => recordList.push(e));
+      pipeFirst.subscribe(e => recordList.push({...e.data, id: e.id}));
       this.recordList$.push(pipeFirst);
     }
 
     await forkJoin(this.recordList$).pipe(first()).toPromise();
+    console.log(this.sessionData.currentIndex);
+    // console.log("getDataServer");
+    // console.log(recordList);
     this.sessionData.currentIndex += requestNum;
     return recordList;
 
@@ -198,19 +214,19 @@ export class TbodyComponent implements OnInit {
     this.subscriptions$.push(vc$.subscribe((attributes) => {
       attributes.forEach((att) => {
         // data loss, lost referenced Id, dataType and isPrimaryKey
-        this.sortOrder.push({ key: att.name, order: att.relativePosition, dataType: att.DataType });
+        this.sortOrder.push({ key: att.name, order: att.relativePosition, dataType: att.DataType, id: att.id });
       });
       this.sortOrder.sort((a, b) => a.order - b.order);
       // this.applyColumnOrder();
     }));
-    console.log("PIPE FIRST");
-    console.log(pipeFirst);
+    // console.log("PIPE FIRST");
+    // console.log(pipeFirst);
     return pipeFirst;
   }
 
   prepareLabelingTask(projectID: string): any {
     [this.labelingTasksQuery$, this.labelingTasks$] = this.projectApolloService.getLabelingTasksByProjectId(projectID);
-    console.log("this.labeling tasks");
+    // console.log("this.labeling tasks");
     // console.log(this.labelingTasks$)
     // this.labelingTasks$.subscribe(e=>console.log(e))
     // this.subscriptions$.push(this.labelingTasks$.subscribe((tasks) => {
@@ -253,6 +269,7 @@ export class TbodyComponent implements OnInit {
       tasks.forEach(element => {
         if (element.taskType === "MULTICLASS_CLASSIFICATION")
         {
+          // console.log(element);
           this.labelingTaskColumns.push(element);
         }
       });
@@ -264,7 +281,7 @@ export class TbodyComponent implements OnInit {
   generateColumns(): Array<any>{
     const columns: Column[] = [];
     this.sortOrder.forEach((attribute) => {
-      console.log(attribute);
+      // console.log(attribute);
       columns.push({
         columnDef: attribute.key as string,
         header: attribute.key as string,
@@ -272,7 +289,8 @@ export class TbodyComponent implements OnInit {
         isPrimaryKey: false,
         classStyle: "attribute " + attribute.key,
         columnType: ColumnType.DATA_POINT,
-        dataType: DataType.TEXT
+        dataType: DataType.TEXT,
+        id: attribute.id
       });
     });
 
@@ -285,9 +303,12 @@ export class TbodyComponent implements OnInit {
         classStyle: "labelingTask " + labelingTask.name,
         columnType: ColumnType.LABELING_TASK,
         dataType: DataType.TEXT,
-        parent: labelingTask
+        parent: labelingTask,
+        id: labelingTask.id,
+        labels: labelingTask.labels
       });
     });
+    console.log(columns);
     return columns;
 
   }
@@ -306,4 +327,24 @@ export class TbodyComponent implements OnInit {
     // localStorage.setItem('sessionData', JSON.stringify(this.sessionData));
     // console.log(this.sessionData);
   }
+  labelClick(row: any): void{
+    console.log(row);
+  }
+  // styling functions for buttons
+  getBackground(color: any): string {
+    return `bg-${color}-100`;
+  }
+
+  getText(color: any): string {
+    return `text-${color}-700`;
+  }
+
+  getBorder(color: any): string {
+    return `border-${color}-400`;
+  }
+
+  getHover(color: any): string {
+    return `hover:bg-${color}-200`;
+  }
+
 }
