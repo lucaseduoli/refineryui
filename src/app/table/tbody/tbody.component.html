@@ -26,7 +26,7 @@
       {{column.columnDef|titlecase}}
     </mat-header-cell>
     <mat-cell *matCellDef="let dataRow">
-    <ng-container *ngIf="dataRow[column.columnDef]!==undefined;else taskLabel">
+    <ng-container *ngIf="column.columnType!=='LABELING_TASK';else taskLabel">
         {{dataRow[column.columnDef]}}
     </ng-container>
     <ng-template #taskLabel>
@@ -34,8 +34,8 @@
         <div class="flex flex-grow items-center">
           <!--first N options as buttons-->
           <div class="flex flex-row">
-              <button (click)="labelClick(dataRow)"
-              [ngClass]="[getBackground(label.color), getText(label.color), getBorder(label.color), getHover(label.color)]"
+              <button (click)="labelClick(dataRow,label,column)"
+              [ngClass]="[getHover(label.color), dataRow[column.columnDef]?(dataRow[column.columnDef]===label.id ?'shadow-lg '+getShadow(label.color)+getBackground(label.color):'bg-gray-300'):getBackground(label.color), getText(label.color), getBorder(label.color)]"
                   class="text-sm font-medium mr-3 px-2 py-0.5 rounded-md border">
                   <label
                       class="leading-5 truncate max-w-xs cursor-pointer mx-4">{{label.name}}
@@ -49,6 +49,6 @@
   </ng-container>
 
   <mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns"
-  ></mat-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns">
+  </mat-row>
 </mat-table>

@@ -133,7 +133,7 @@ export class TbodyComponent implements OnInit {
     for ( let i = this.sessionData.currentIndex; i < this.sessionData.currentIndex + requestNum; i++){
       // this.recordApolloService.getRecordByRecordId(projectId,this.sessionData.recordIds[i]).subscribe(e=>console.log(e))
       const pipeFirst = this.recordApolloService.getRecordByRecordId(projectId, this.sessionData.recordIds[i]).pipe(first());
-      pipeFirst.subscribe(e => recordList.push({...e.data, id: e.id}));
+      pipeFirst.subscribe(e => recordList.push({...e.data, id: e.id, unselected: true}));
       this.recordList$.push(pipeFirst);
     }
 
@@ -327,8 +327,17 @@ export class TbodyComponent implements OnInit {
     // localStorage.setItem('sessionData', JSON.stringify(this.sessionData));
     // console.log(this.sessionData);
   }
-  labelClick(row: any): void{
+  labelClick(row: any, label: any, labelingTask: any): void{
     console.log(row);
+    console.log(labelingTask);
+    console.log(label);
+    if (row[labelingTask.columnDef] === label.id){
+      console.log("entrou");
+      row[labelingTask.columnDef] = undefined;
+    }
+    else{
+      row[labelingTask.columnDef] = label.id;
+    }
   }
   // styling functions for buttons
   getBackground(color: any): string {
@@ -346,5 +355,7 @@ export class TbodyComponent implements OnInit {
   getHover(color: any): string {
     return `hover:bg-${color}-200`;
   }
-
+  getShadow(color: string): string{
+    return `shadow-${color}-500/50 `;
+  }
 }
