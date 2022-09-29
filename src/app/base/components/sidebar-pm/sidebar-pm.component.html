@@ -28,7 +28,7 @@
 
                     <div *ngIf="project$ | async as project">
                         <div *ngIf="project.id !== null">
-                            <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
+                            <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
                                 <div data-tip="Overview" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./overview']" rel="noopener noreferrer" class="circle text-black"
@@ -40,8 +40,8 @@
                                         </svg>
                                     </a>
                                 </div>
-                            </div>
-                            <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
+                            </div> -->
+                            <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
                                 <div data-tip="Data Browser" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./data']" rel="noopener noreferrer" class="circle text-black"
@@ -59,7 +59,7 @@
                                         </svg>
                                     </a>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
                                 <div data-tip="Labeling" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
@@ -126,7 +126,7 @@
                 <div *ngIf="!isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12">
                     <button data-tip="Maximize screen" (click)="openFullscreen()"
                         class="z-50 tooltip tooltip-right cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="text-black icon icon-tabler icon-tabler-maximize"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="my-2 ctext-black icon icon-tabler icon-tabler-maximize"
                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -140,7 +140,7 @@
                 <div *ngIf="isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12">
                     <button data-tip="Minimize screen" (click)="closeFullscreen()"
                         class="z-50 tooltip tooltip-right cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="text-black icon icon-tabler icon-tabler-minimize"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="my-2 text-black icon icon-tabler icon-tabler-minimize"
                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -150,11 +150,6 @@
                             <path d="M5 9h2a2 2 0 0 0 2 -2v-2"></path>
                         </svg>
                     </button>
-                </div>
-                <div class="flex-shrink-0 flex py-6 justify-center">
-                    <a data-tip="Changelog" target="_blank" rel="noopener noreferrer"
-                        class="z-50 tooltip tooltip-right cursor-pointer select-none text-black"
-                        >v0.1</a>
                 </div>
             </div>
         </div>

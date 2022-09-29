@@ -14,7 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from 'src/app/base/entities/project';
 import {moveItemInArray, CdkDragDrop} from '@angular/cdk/drag-drop';
 import { DataBrowserComponent } from 'src/app/data/components/data-browser/data-browser.component';
-
+import {InformationSourceType} from 'src/app/base/enum/graphql-enums';
 
 @Component({
   selector: 'kern-tbody',
@@ -54,6 +54,7 @@ export class TbodyComponent implements OnInit {
   showTokenDisabled = true;
   labelingTaskWait: boolean;
   labelingTaskColumns = [];
+  predictionsColumns = [];
   columns: Column[];
   sessionData: any;
   session$: any;
@@ -271,6 +272,16 @@ export class TbodyComponent implements OnInit {
         {
           // console.log(element);
           this.labelingTaskColumns.push(element);
+          if (element.informationSources.length > 0){
+            element.informationSources.forEach(infSOurce => {
+              // console.log(infSOurce);
+              // console.log(infSOurce.type);
+              if (infSOurce.type === InformationSourceType.ZERO_SHOT){
+                this.predictionsColumns.push(infSOurce);
+              }
+            });
+
+          }
         }
       });
     });
@@ -302,13 +313,26 @@ export class TbodyComponent implements OnInit {
         isPrimaryKey: false,
         classStyle: "labelingTask " + labelingTask.name,
         columnType: ColumnType.LABELING_TASK,
-        dataType: DataType.TEXT,
+        dataType: DataType.UNKNOWN,
         parent: labelingTask,
         id: labelingTask.id,
         labels: labelingTask.labels
       });
     });
-    console.log(columns);
+    this.predictionsColumns.forEach((prediction => {
+      columns.push({
+        columnDef: prediction.name as string,
+        header: prediction.name as string,
+        isSort: false,
+        isPrimaryKey: false,
+        classStyle: "prediction " + prediction.name,
+        columnType: ColumnType.PREDICTION,
+        dataType: DataType.TEXT,
+        parent: prediction,
+        id: prediction.id,
+      });
+    }));
+    // console.log(columns);
     return columns;
 
   }
@@ -328,9 +352,9 @@ export class TbodyComponent implements OnInit {
     // console.log(this.sessionData);
   }
   labelClick(row: any, label: any, labelingTask: any): void{
-    console.log(row);
-    console.log(labelingTask);
-    console.log(label);
+    // console.log(row);
+    // console.log(labelingTask);
+    // console.log(label);
     if (row[labelingTask.columnDef] === label.id){
       console.log("entrou");
       row[labelingTask.columnDef] = undefined;

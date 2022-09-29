@@ -26,10 +26,10 @@
       {{column.columnDef|titlecase}}
     </mat-header-cell>
     <mat-cell *matCellDef="let dataRow">
-    <ng-container *ngIf="column.columnType!=='LABELING_TASK';else taskLabel">
+    <ng-container *ngIf="column.columnType==='DATA_POINT';">
         {{dataRow[column.columnDef]}}
     </ng-container>
-    <ng-template #taskLabel>
+    <ng-container *ngIf="column.columnType==='LABELING_TASK'">
       <ng-container *ngFor="let label of column.labels">
         <div class="flex flex-grow items-center">
           <!--first N options as buttons-->
@@ -44,7 +44,10 @@
           </div>
           </div>
         </ng-container>
-    </ng-template>
+    </ng-container>
+    <ng-container *ngIf="column.columnType==='PREDICTION'">
+
+    </ng-container>
     </mat-cell>
   </ng-container>
 

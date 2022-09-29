@@ -6,6 +6,7 @@ export interface Column{
   classStyle: string;
   columnType: ColumnType;
   dataType: DataType;
+  informationSource?: any;
   parent?: any;
   labels?: any;
   id: number;
@@ -13,7 +14,8 @@ export interface Column{
 
 export enum ColumnType{
   DATA_POINT= "DATA_POINT",
-  LABELING_TASK= "LABELING_TASK"
+  LABELING_TASK= "LABELING_TASK",
+  PREDICTION= "PREDICTION"
 }
 
 export enum DataType{
