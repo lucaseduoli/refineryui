@@ -60,6 +60,9 @@ export class TbodyComponent implements OnInit {
   session$: any;
   recordList$ = [];
   scrollLock = false;
+  recordLabelAssociationsQuery$: any;
+  recordLabelAssociations$: any;
+
 
 
 
@@ -134,17 +137,29 @@ export class TbodyComponent implements OnInit {
     for ( let i = this.sessionData.currentIndex; i < this.sessionData.currentIndex + requestNum; i++){
       // this.recordApolloService.getRecordByRecordId(projectId,this.sessionData.recordIds[i]).subscribe(e=>console.log(e))
       const pipeFirst = this.recordApolloService.getRecordByRecordId(projectId, this.sessionData.recordIds[i]).pipe(first());
-      pipeFirst.subscribe(e => recordList.push({...e.data, id: e.id, unselected: true}));
+      pipeFirst.subscribe(e => recordList.push({...e.data, id: e.id}));
       this.recordList$.push(pipeFirst);
     }
 
     await forkJoin(this.recordList$).pipe(first()).toPromise();
+    recordList.forEach((record) => {
+      console.log(record);
+      this.colletRecordData(projectId, record.id);
+    });
     console.log(this.sessionData.currentIndex);
     // console.log("getDataServer");
     // console.log(recordList);
     this.sessionData.currentIndex += requestNum;
     return recordList;
+  }
 
+  async colletRecordData(projectId: string, recordId: string): Promise<void>{
+    // console.log(recordId)
+    let rlas$;
+    [this.recordLabelAssociationsQuery$, rlas$] =
+    this.recordApolloService.getRecordLabelAssociations(projectId, recordId);
+    // console.log(rlas$);
+    rlas$.pipe(first()).subscribe(e=>console.log(e));
   }
 
   isAllSelected(): boolean{
@@ -365,19 +380,19 @@ export class TbodyComponent implements OnInit {
   }
   // styling functions for buttons
   getBackground(color: any): string {
-    return `bg-${color}-100`;
+    return `bg-${color}-100 `;
   }
 
   getText(color: any): string {
-    return `text-${color}-700`;
+    return `text-${color}-700 `;
   }
 
   getBorder(color: any): string {
-    return `border-${color}-400`;
+    return `border-${color}-400 `;
   }
 
   getHover(color: any): string {
-    return `hover:bg-${color}-200`;
+    return `hover:bg-${color}-200 `;
   }
   getShadow(color: string): string{
     return `shadow-${color}-500/50 `;
