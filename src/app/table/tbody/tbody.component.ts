@@ -145,7 +145,7 @@ export class TbodyComponent implements OnInit {
       // console.log(record);
       await this.colletRecordData(projectId, record);
     });
-    console.log(this.sessionData.currentIndex);
+    // console.log(this.sessionData.currentIndex);
     // console.log("getDataServer");
     // console.log(recordList);
     this.sessionData.currentIndex += requestNum;
@@ -165,8 +165,8 @@ export class TbodyComponent implements OnInit {
           && element.informationSource.type === InformationSourceType.ZERO_SHOT)
         {
           record[element.sourceId] = {confidence: element.confidence, id: element.id, label: element.labelingTaskLabel};
-          console.log(record);
-          console.log(record[element.sourceId]);
+          // console.log(record);
+          // console.log(record[element.sourceId]);
         }
       });
   }
@@ -238,8 +238,9 @@ export class TbodyComponent implements OnInit {
 
     this.subscriptions$.push(vc$.subscribe((attributes) => {
       attributes.forEach((att) => {
-        // data loss, lost referenced Id, dataType and isPrimaryKey
-        this.sortOrder.push({ key: att.name, order: att.relativePosition, dataType: att.DataType, id: att.id });
+        // console.log(att);
+        this.sortOrder.push({ key: att.name, order: att.relativePosition, dataType: att.dataType,
+           id: att.id, isPrimaryKey: att.isPrimaryKey});
       });
       this.sortOrder.sort((a, b) => a.order - b.order);
       // this.applyColumnOrder();
@@ -316,20 +317,24 @@ export class TbodyComponent implements OnInit {
   generateColumns(): Array<any>{
     const columns: Column[] = [];
     this.sortOrder.forEach((attribute) => {
-      // console.log(attribute);
+      console.log(attribute);
       columns.push({
         columnDef: attribute.key as string,
         header: attribute.key as string,
         isSort: true,
-        isPrimaryKey: false,
+        isPrimaryKey: attribute.isPrimaryKey,
         classStyle: "attribute " + attribute.key,
         columnType: ColumnType.DATA_POINT,
-        dataType: DataType.TEXT,
+        dataType: attribute.dataType,
         id: attribute.id
       });
     });
-
     this.labelingTaskColumns.forEach((labelingTask) => {
+      console.log(labelingTask);
+      if (labelingTask.labels && labelingTask.labels.length > 3){
+        window.alert("too many labels in one task, please, select less than four labels per task");
+        throw Error("too many labels per task");
+      }
       columns.push({
         columnDef: labelingTask.name as string,
         header: labelingTask.name as string,
@@ -344,6 +349,7 @@ export class TbodyComponent implements OnInit {
       });
     });
     this.predictionsColumns.forEach((prediction => {
+      console.log(prediction);
       columns.push({
         columnDef: prediction.name as string,
         header: prediction.name as string,
@@ -351,7 +357,7 @@ export class TbodyComponent implements OnInit {
         isPrimaryKey: false,
         classStyle: "prediction " + prediction.name,
         columnType: ColumnType.PREDICTION,
-        dataType: DataType.TEXT,
+        dataType: DataType.UNKNOWN,
         parent: prediction,
         id: prediction.id,
       });

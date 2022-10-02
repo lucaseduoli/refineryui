@@ -15,19 +15,21 @@
       </mat-checkbox>
     </mat-cell>
   </ng-container>
-  <ng-container *ngFor="let column of columns;let i=index" [matColumnDef]="column.columnDef">
+  <ng-container *ngFor="let column of columns;let i=index" [matColumnDef]="column.columnDef" [ngClass]="[column.classStyle,column.dataType]" >
     <mat-header-cell *matHeaderCellDef mat-sort-header
     cdkDragLockAxis="x"
     cdkDragBoundary="mat-header-row"
     cdkDrag
     disabled="{{!column.isSort}}"
-    ngClass="{{column.classStyle}}"
+    [ngClass]="[column.classStyle,column.dataType]"
     >
       {{column.columnDef|titlecase}}
     </mat-header-cell>
-    <mat-cell *matCellDef="let dataRow">
+    <mat-cell *matCellDef="let dataRow" [ngClass]="[column.classStyle,column.dataType]">
     <ng-container *ngIf="column.columnType==='DATA_POINT';">
-        {{dataRow[column.columnDef]}}
+        <div class="pr-2.5">
+          {{dataRow[column.columnDef]}}
+        </div>
     </ng-container>
     <ng-container *ngIf="column.columnType==='LABELING_TASK'">
       <ng-container *ngFor="let label of column.labels">
