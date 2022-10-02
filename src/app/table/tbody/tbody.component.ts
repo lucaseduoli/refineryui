@@ -7,14 +7,14 @@ import { Column, ColumnType, DataType } from '../../base/entities/table-column';
 import { OrganizationApolloService } from 'src/app/base/services/organization/organization-apollo.service';
 import { RecordApolloService } from 'src/app/base/services/record/record-apollo.service';
 import { ProjectApolloService } from '../../base/services/project/project-apollo.service';
-import { first } from 'rxjs/operators';
+import { first, map } from 'rxjs/operators';
 import { Observable, Subscription, forkJoin} from 'rxjs';
 import { RouteService } from 'src/app/base/services/route.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from 'src/app/base/entities/project';
 import {moveItemInArray, CdkDragDrop} from '@angular/cdk/drag-drop';
 import { DataBrowserComponent } from 'src/app/data/components/data-browser/data-browser.component';
-import {InformationSourceType} from 'src/app/base/enum/graphql-enums';
+import {InformationSourceType,LabelSource} from 'src/app/base/enum/graphql-enums';
 
 @Component({
   selector: 'kern-tbody',
@@ -62,7 +62,6 @@ export class TbodyComponent implements OnInit {
   scrollLock = false;
   recordLabelAssociationsQuery$: any;
   recordLabelAssociations$: any;
-
 
 
 
@@ -142,9 +141,9 @@ export class TbodyComponent implements OnInit {
     }
 
     await forkJoin(this.recordList$).pipe(first()).toPromise();
-    recordList.forEach((record) => {
-      console.log(record);
-      this.colletRecordData(projectId, record.id);
+    recordList.forEach(async (record) => {
+      // console.log(record);
+      await this.colletRecordData(projectId, record);
     });
     console.log(this.sessionData.currentIndex);
     // console.log("getDataServer");
@@ -153,13 +152,23 @@ export class TbodyComponent implements OnInit {
     return recordList;
   }
 
-  async colletRecordData(projectId: string, recordId: string): Promise<void>{
+  async colletRecordData(projectId: string, record: any): Promise<void>{
     // console.log(recordId)
     let rlas$;
     [this.recordLabelAssociationsQuery$, rlas$] =
-    this.recordApolloService.getRecordLabelAssociations(projectId, recordId);
+    this.recordApolloService.getRecordLabelAssociations(projectId, record.id);
     // console.log(rlas$);
-    rlas$.pipe(first()).subscribe(e=>console.log(e));
+    let result = await rlas$.pipe(first()).toPromise();
+    result.forEach(element => {
+        // console.log(element);
+        if (element.confidence && element.sourceType === LabelSource.INFORMATION_SOURCE
+          && element.informationSource.type === InformationSourceType.ZERO_SHOT)
+        {
+          record[element.sourceId] = {confidence: element.confidence, id: element.id, label: element.labelingTaskLabel};
+          console.log(record);
+          console.log(record[element.sourceId]);
+        }
+      });
   }
 
   isAllSelected(): boolean{
@@ -396,5 +405,13 @@ export class TbodyComponent implements OnInit {
   }
   getShadow(color: string): string{
     return `shadow-${color}-500/50 `;
+  }
+  getLabelForDisplay(labelName: string, confidence: number): string {
+    return (
+      labelName +
+      (confidence || confidence == 0
+        ? ' - ' + Math.round((confidence + Number.EPSILON) * 10000) / 100 + '%'
+        : '')
+    );
   }
 }

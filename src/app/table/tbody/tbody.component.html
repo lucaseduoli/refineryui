@@ -46,7 +46,17 @@
         </ng-container>
     </ng-container>
     <ng-container *ngIf="column.columnType==='PREDICTION'">
-
+      <ng-container *ngIf="dataRow[column.id]">
+        <div class="text-sm font-medium mr-3 px-2 py-0.5 rounded-md border border-dotted mr-2 cursor-default"
+            [ngClass]="[getBackground(dataRow[column.id].label.color), getText(dataRow[column.id].label.color), getBorder(dataRow[column.id].label.color)]">
+            {{getLabelForDisplay(dataRow[column.id].label.name,dataRow[column.id].confidence)}}
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!dataRow[column.id]">
+        <div class="text-sm font-medium mr-3 px-2 py-0.5 rounded-md border border-dotted mr-2 cursor-default bg-gray-300 border-gray-400 text-gray-700">
+           no prediction
+      </div>
+      </ng-container>
     </ng-container>
     </mat-cell>
   </ng-container>
