@@ -41,21 +41,28 @@ export class RecordApolloService {
 
 
   deleteRecordByRecordId(projectId, recordId): Observable<any> {
-    return this.apollo.mutate({
-      mutation: mutations.DELETE_RECORD_BY_RECORD_ID,
-      variables: {
-        projectId: projectId,
-        recordId: recordId,
-      },
-      refetchQueries: [
-        {
-          query: projectQueries.GET_PROJECT_BY_ID,
-          variables: {
-            projectId: projectId,
-          },
+    try{
+      return this.apollo.mutate({
+        mutation: mutations.DELETE_RECORD_BY_RECORD_ID,
+        variables: {
+          projectId: projectId,
+          recordId: recordId,
         },
-      ],
-    });
+        refetchQueries: [
+          {
+            query: projectQueries.GET_PROJECT_BY_ID,
+            variables: {
+              projectId: projectId,
+            },
+          },
+        ],
+      });
+    }
+    catch(error)
+    {
+      console.log(error);
+      throw error;
+    }
   }
 
   getNextRecordId(projectId, accessStrategy) {

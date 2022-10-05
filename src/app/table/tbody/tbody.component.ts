@@ -8,7 +8,7 @@ import { OrganizationApolloService } from 'src/app/base/services/organization/or
 import { RecordApolloService } from 'src/app/base/services/record/record-apollo.service';
 import { ProjectApolloService } from '../../base/services/project/project-apollo.service';
 import { first, map } from 'rxjs/operators';
-import { Observable, Subscription, forkJoin} from 'rxjs';
+import { Observable, Subscription, forkJoin, pipe} from 'rxjs';
 import { RouteService } from 'src/app/base/services/route.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from 'src/app/base/entities/project';
@@ -88,7 +88,7 @@ export class TbodyComponent implements OnInit {
     initialTasks$.push(this.prepareProject(projectId));
     initialTasks$.push(this.prepareSortOrder(projectId));
     initialTasks$.push(this.getLabelingTasks(projectId));
-    forkJoin(initialTasks$).pipe(first()).subscribe(e => {
+    forkJoin(initialTasks$).pipe(first()).subscribe(_ => {
       // console.log("after fork join");
       // console.log(e);
       this.requestSessionData(projectId, TbodyComponent.DUMMY_SESSION_ID).then(() => {
@@ -182,15 +182,44 @@ export class TbodyComponent implements OnInit {
       this.dataSource.data.forEach(row => this.selection.select(row));
     }
   }
-  delete(): void{
-    this.selection.selected.forEach(item => {
-      const index: number = this.dataSource.data.findIndex(data => data === item);
-      this.dataSource.data.splice(index, 1);
-    });
-    this.concatData();
-    this.selection.clear();
-    this.dataSource._updateChangeSubscription();
-    this.dataSource.sort = this.sort;
+  async delete(): Promise<void>{
+    const deletes$ = [];
+    try{
+      this.selection.selected.forEach(item => {
+        const index: number = this.dataSource.data.findIndex(data => data === item);
+        console.log(this.project.id);
+        console.log(this.dataSource.data[index]);
+        const deletedRecord$ = this.recordApolloService.deleteRecordByRecordId(this.project.id , this.dataSource.data[index].id)
+        .pipe(first());
+        deletes$.push(deletedRecord$);
+        deletedRecord$.subscribe((delRecord) =>
+        {
+          console.log("subscribe of for_each");
+          if (delRecord['data']['deleteRecord']?.ok){
+            this.dataSource.data.splice(index, 1);
+            console.log("inside if");
+          }
+          else
+          {
+            window.alert(`error deleting record ${this.dataSource.data[index].running_id}`);
+          }
+        }
+        );
+      });
+      await forkJoin(deletes$).pipe(first()).toPromise();
+      this.selection.clear();
+      this.concatData();
+      this.dataSource._updateChangeSubscription();
+      this.dataSource.sort = this.sort;
+      console.log("out forkjoin");
+    }
+    catch (error) {
+      console.log(error);
+      this.selection.clear();
+      this.dataSource._updateChangeSubscription();
+      this.dataSource.sort = this.sort;
+    }
+
   }
 
   duplicate(): void{
