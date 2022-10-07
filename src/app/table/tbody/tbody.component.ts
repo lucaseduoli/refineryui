@@ -183,37 +183,43 @@ export class TbodyComponent implements OnInit {
     }
   }
   async delete(): Promise<void>{
-    const deletes$ = [];
+    const deletedIds: Array<string> = [];
+    const oldData = this.dataSource.data;
     try{
       this.selection.selected.forEach(item => {
         const index: number = this.dataSource.data.findIndex(data => data === item);
         console.log(this.project.id);
         console.log(this.dataSource.data[index]);
-        const deletedRecord$ = this.recordApolloService.deleteRecordByRecordId(this.project.id , this.dataSource.data[index].id)
-        .pipe(first());
-        deletes$.push(deletedRecord$);
-        deletedRecord$.subscribe((delRecord) =>
-        {
-          console.log("subscribe of for_each");
-          if (delRecord['data']['deleteRecord']?.ok){
-            this.dataSource.data.splice(index, 1);
-            console.log("inside if");
-          }
-          else
-          {
-            window.alert(`error deleting record ${this.dataSource.data[index].running_id}`);
-          }
-        }
-        );
+        deletedIds.push(this.dataSource.data[index].id);
+        this.dataSource.data.splice(index, 1);
+        // const deletedRecord$ = this.recordApolloService.deleteRecordByRecordId(this.project.id , this.dataSource.data[index].id)
+        // .pipe(first());
+        // deletes$.push(deletedRecord$);
+        // deletedRecord$.subscribe((delRecord) =>
+        // {
+        //   console.log("subscribe of for_each");
+        //   if (delRecord['data']['deleteRecord']?.ok){
+        //     console.log("inside if");
+        //   }
+        //   else
+        //   {
+        //     window.alert(`error deleting record ${this.dataSource.data[index].running_id}`);
+        //   }
+        // }
+        // );
       });
-      await forkJoin(deletes$).pipe(first()).toPromise();
+      // await forkJoin(deletes$).pipe(first()).toPromise();
+      let response =  await this.recordApolloService.deleteByRecordIds(this.project.id, deletedIds).toPromise();
+      console.log(response);
       this.selection.clear();
       this.concatData();
       this.dataSource._updateChangeSubscription();
       this.dataSource.sort = this.sort;
-      console.log("out forkjoin");
+
+      // console.log("out forkjoin");
     }
     catch (error) {
+      this.dataSource.data = oldData;
       console.log(error);
       this.selection.clear();
       this.dataSource._updateChangeSubscription();

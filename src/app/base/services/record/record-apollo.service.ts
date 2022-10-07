@@ -65,6 +65,24 @@ export class RecordApolloService {
     }
   }
 
+  deleteByRecordIds(projectId: string , recordIds: Array<string>){
+    return this.apollo.mutate({
+      mutation: mutations.DELETE_RECORDS_BY_RECORD_IDS,
+      variables: {
+        projectId: projectId,
+        recordId: recordIds,
+      },
+      refetchQueries: [
+        {
+          query: projectQueries.GET_PROJECT_BY_ID,
+          variables: {
+            projectId: projectId,
+          },
+        },
+      ],
+    });
+  }
+
   getNextRecordId(projectId, accessStrategy) {
     return this.apollo
       .watchQuery({

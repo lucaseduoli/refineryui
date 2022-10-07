@@ -15,19 +15,26 @@ export const mutations = {
       ok
     }
   }
-  
+
 `,
 
-  DELETE_RECORD_BY_RECORD_ID: gql`  
+  DELETE_RECORD_BY_RECORD_ID: gql`
   mutation($projectId: ID!, $recordId: ID!){
     deleteRecord(projectId:$projectId,recordId:$recordId){
       ok
     }
   }
 `,
+  DELETE_RECORDS_BY_RECORD_IDS: gql`
+  mutation deleteRecords($projectId: ID!, $recordId: [ID]!){
+    deleteRecords (projectId: $projectId, recordIds: $recordId){
+      ok
+    }
+  }
+`,
   DELETE_RECORD_LABEL_ASSOCIATION_BY_ID: gql`
   mutation($projectId: ID!, $recordId: ID!, $associationIds: [ID]){
-    deleteRecordLabelAssociationByIds( 
+    deleteRecordLabelAssociationByIds(
       projectId:$projectId,
       recordId:$recordId,
       associationIds:$associationIds){
@@ -41,7 +48,7 @@ export const mutations = {
       ok
     }
   }
-  
+
 `,
   SKIP_LABELING_RECORD: gql`
     mutation ($projectId: ID!, $recordId: ID!, $accessStrategy: String) {
@@ -82,7 +89,7 @@ export const mutations = {
     setGoldStarAnnotationForTask(projectId: $projectId, recordId: $recordId, labelingTaskId: $labelingTaskId, goldUserId: $goldUserId) {
       ok
     }
-  }  
+  }
   `,
   REMOVE_GOLD_STAR_ANNOTATION_FOR_TASK: gql`
   mutation ($projectId: ID!, $recordId: ID!, $labelingTaskId: ID!) {

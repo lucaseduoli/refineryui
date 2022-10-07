@@ -33,7 +33,7 @@
     </ng-container>
     <ng-container *ngIf="column.columnType==='LABELING_TASK'">
       <ng-container *ngFor="let label of column.labels">
-        <div class="flex flex-grow items-center">
+        <div class="flex items-center">
           <!--first N options as buttons-->
           <div class="flex flex-row">
               <button (click)="labelClick(dataRow,label,column)"
