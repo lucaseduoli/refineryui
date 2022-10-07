@@ -1,4 +1,4 @@
-<div *ngIf="project" class="h-full bg-white p-4">
+<div *ngIf="project" class="h-full bg-white p-4 overflow-y-auto">
     <div *ngIf="informationSource" class="h-full">
 
         <div #stickyHeader class="pt-2 sticky -top-2 z-40 h-12">
@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div class="overflow-x-hidden">
+        <div class="overflow-x-hidden pb-12">
             <div class="grid gap-4 " [ngClass]="isHeaderNormal ? 'grid-cols-2' : 'grid-cols-1'">
                 <div class="flex items-center mt-2" *ngIf="isHeaderNormal">
                     <button (click)="openName(true)" data-tip="Edit your heuristic's name"

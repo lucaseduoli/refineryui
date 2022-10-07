@@ -211,16 +211,18 @@ export class TbodyComponent implements OnInit {
       // await forkJoin(deletes$).pipe(first()).toPromise();
       let response =  await this.recordApolloService.deleteByRecordIds(this.project.id, deletedIds).toPromise();
       console.log(response);
+      if(!(response.data as any).deleteRecords.ok){
+        throw Error("server side error");
+      }
       this.selection.clear();
       this.concatData();
       this.dataSource._updateChangeSubscription();
       this.dataSource.sort = this.sort;
 
-      // console.log("out forkjoin");
     }
     catch (error) {
+      window.alert(error.message);
       this.dataSource.data = oldData;
-      console.log(error);
       this.selection.clear();
       this.dataSource._updateChangeSubscription();
       this.dataSource.sort = this.sort;
