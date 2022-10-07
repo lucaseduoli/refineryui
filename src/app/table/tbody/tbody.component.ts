@@ -192,23 +192,7 @@ export class TbodyComponent implements OnInit {
         console.log(this.dataSource.data[index]);
         deletedIds.push(this.dataSource.data[index].id);
         this.dataSource.data.splice(index, 1);
-        // const deletedRecord$ = this.recordApolloService.deleteRecordByRecordId(this.project.id , this.dataSource.data[index].id)
-        // .pipe(first());
-        // deletes$.push(deletedRecord$);
-        // deletedRecord$.subscribe((delRecord) =>
-        // {
-        //   console.log("subscribe of for_each");
-        //   if (delRecord['data']['deleteRecord']?.ok){
-        //     console.log("inside if");
-        //   }
-        //   else
-        //   {
-        //     window.alert(`error deleting record ${this.dataSource.data[index].running_id}`);
-        //   }
-        // }
-        // );
       });
-      // await forkJoin(deletes$).pipe(first()).toPromise();
       let response =  await this.recordApolloService.deleteByRecordIds(this.project.id, deletedIds).toPromise();
       console.log(response);
       if(!(response.data as any).deleteRecords.ok){
