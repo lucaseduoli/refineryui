@@ -136,7 +136,7 @@ export class TbodyComponent implements OnInit {
     for ( let i = this.sessionData.currentIndex; i < this.sessionData.currentIndex + requestNum; i++){
       // this.recordApolloService.getRecordByRecordId(projectId,this.sessionData.recordIds[i]).subscribe(e=>console.log(e))
       const pipeFirst = this.recordApolloService.getRecordByRecordId(projectId, this.sessionData.recordIds[i]).pipe(first());
-      pipeFirst.subscribe(e => recordList.push({...e.data, id: e.id}));
+      pipeFirst.subscribe(e => recordList.push({...e.data, _id: e.id}));
       this.recordList$.push(pipeFirst);
     }
 
@@ -156,11 +156,11 @@ export class TbodyComponent implements OnInit {
     // console.log(recordId)
     let rlas$;
     [this.recordLabelAssociationsQuery$, rlas$] =
-    this.recordApolloService.getRecordLabelAssociations(projectId, record.id);
+    this.recordApolloService.getRecordLabelAssociations(projectId, record._id);
     // console.log(rlas$);
     let result = await rlas$.pipe(first()).toPromise();
     result.forEach(element => {
-        // console.log(element);
+        console.log(element);
         if (element.confidence && element.sourceType === LabelSource.INFORMATION_SOURCE
           && element.informationSource.type === InformationSourceType.ZERO_SHOT)
         {
@@ -168,12 +168,19 @@ export class TbodyComponent implements OnInit {
           // console.log(record);
           // console.log(record[element.sourceId]);
         }
+        if ( element.sourceType === LabelSource.MANUAL){
+          console.log(element.labelingTaskLabel.labelingTask.name);
+          // rlasId represents only manual record lable associations
+          record[element.labelingTaskLabel.labelingTask.name] = {labelId: element.labelingTaskLabelId, rlasId: element.id};
+          console.log(record[element.labelingTaskLabel.labelingTask.name]);
+        }
       });
   }
 
   isAllSelected(): boolean{
     return (this.selection.selected.length === this.dataSource.data.length);
   }
+
   masterToogle(): void{
     if (this.isAllSelected()){
       this.selection.clear();
@@ -190,7 +197,7 @@ export class TbodyComponent implements OnInit {
         const index: number = this.dataSource.data.findIndex(data => data === item);
         console.log(this.project.id);
         console.log(this.dataSource.data[index]);
-        deletedIds.push(this.dataSource.data[index].id);
+        deletedIds.push(this.dataSource.data[index]._id);
         this.dataSource.data.splice(index, 1);
       });
       let response =  await this.recordApolloService.deleteByRecordIds(this.project.id, deletedIds).toPromise();
@@ -406,14 +413,50 @@ export class TbodyComponent implements OnInit {
     // console.log(row);
     // console.log(labelingTask);
     // console.log(label);
-    if (row[labelingTask.columnDef] === label.id){
+    if (row[labelingTask.columnDef]?.labelId === label.id){
       console.log("entrou");
-      row[labelingTask.columnDef] = undefined;
+      row[labelingTask.columnDef].labelId = undefined;
+      row[labelingTask.columnDef].rlasId = undefined;
     }
     else{
-      row[labelingTask.columnDef] = label.id;
+      row[labelingTask.columnDef] = {labelId: label.id};
     }
   }
+
+  addLabelToTask(recordData: any, labelingTaskId: string, labelId: string) {
+
+    this.recordApolloService
+      .addClassificationLabelsToRecord(
+        this.project.id,
+        recordData.id,
+        labelingTaskId,
+        labelId,
+        // gold user thing
+        null
+      )
+      .pipe(first())
+      .subscribe();
+  }
+
+  deleteRecordLabelAssociation(event: MouseEvent, associationId: string) {
+    // event.stopPropagation();
+    // this.somethingLoading = true;
+    // this.recordApolloService
+    //   .deleteRecordLabelAssociationById(
+    //     this.project.id,
+    //     this.fullRecordData.id,
+    //     [associationId]
+    //   ).pipe(first())
+    //   .subscribe();
+    // if (this.loggedInUser.id != this.displayUserId) {
+    //   if (this.fullRecordData.recordLabelAssociations.length == 0 ||
+    //     (this.fullRecordData.recordLabelAssociations.length == 1 && this.fullRecordData.recordLabelAssociations[0].id == associationId)) {
+    //     this.showUserData(this.loggedInUser.id);
+    //   }
+    // }
+  }
+
+
   // styling functions for buttons
   getBackground(color: any): string {
     return `bg-${color}-100 `;
