@@ -1459,7 +1459,7 @@ export class LabelingComponent implements OnInit, OnDestroy {
         this.displayUserId == this.GOLD_USER_ID ? true : null
       )
       .pipe(first())
-      .subscribe();
+      .subscribe(e=>console.log(e));
 
     if (this.autoNextRecord) {
       this.nextRecord();

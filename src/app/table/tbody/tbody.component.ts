@@ -66,8 +66,6 @@ export class TbodyComponent implements OnInit {
 
 
   async onTableScroll(e: any): Promise<void> {
-    // console.log("scroll event");
-    // console.log(this.dataSource.data);
     const tableViewHeight = e.target.offsetHeight; // viewport
     const tableScrollHeight = e.target.scrollHeight; // lenght of all table
     const scrollLocation = e.target.scrollTop; // how far was the scroll
@@ -75,12 +73,9 @@ export class TbodyComponent implements OnInit {
     if (scrollLocation > limit && this.dataSource.data.length < this.total){
       await this.concatData();
     }
-    // console.log(this.dataSource.data);
   }
 
   ngOnInit(): void {
-    // console.log("on init");
-    // console.log(this.dataSource.data);
     this.routeService.updateActivatedRoute(this.activatedRoute);
     const projectId = this.activatedRoute.parent.snapshot.paramMap.get("projectId");
     const initialTasks$ = [];
@@ -89,16 +84,10 @@ export class TbodyComponent implements OnInit {
     initialTasks$.push(this.prepareSortOrder(projectId));
     initialTasks$.push(this.getLabelingTasks(projectId));
     forkJoin(initialTasks$).pipe(first()).subscribe(_ => {
-      // console.log("after fork join");
-      // console.log(e);
       this.requestSessionData(projectId, TbodyComponent.DUMMY_SESSION_ID).then(() => {
-      // console.log(this.sessionData);
-      // console.log(this.dataSource.data);
       this.concatData();
       });
       this.columns = this.generateColumns();
-      // console.log("columns");
-      // console.log(this.columns);
       this.displayedColumns.push(...this.columns.map( element => element.columnDef));
       if (this.displayedColumns.length > 7){
         this.displayedColumns = [];
@@ -110,8 +99,6 @@ export class TbodyComponent implements OnInit {
 
   async concatData(): Promise<void>{
     let data: any[];
-    // console.log("concat Data");
-    // console.log(this.dataSource.data);
     if (this.dataSource)
      {
         data = [...this.dataSource.data, ...(await this.getDataServer(15, this.project.id))];
@@ -120,21 +107,17 @@ export class TbodyComponent implements OnInit {
      {
       data = await this.getDataServer(15, this.project.id);
      }
-    // console.log("new server data");
-    // console.log(data);
     this.dataSource = new MatTableDataSource(data);
     this.scrollLock = false;
     this.dataSource.sort = this.sort;
   }
   async getDataServer(requestNum: number, projectId: string): Promise<Array<any>> {
-    // console.log(this.sessionData.currentIndex);
     if (requestNum < 1 || this.scrollLock){
       return [];
     }
     const recordList = [];
     this.scrollLock = true;
     for ( let i = this.sessionData.currentIndex; i < this.sessionData.currentIndex + requestNum; i++){
-      // this.recordApolloService.getRecordByRecordId(projectId,this.sessionData.recordIds[i]).subscribe(e=>console.log(e))
       const pipeFirst = this.recordApolloService.getRecordByRecordId(projectId, this.sessionData.recordIds[i]).pipe(first());
       pipeFirst.subscribe(e => recordList.push({...e.data, _id: e.id}));
       this.recordList$.push(pipeFirst);
@@ -142,37 +125,29 @@ export class TbodyComponent implements OnInit {
 
     await forkJoin(this.recordList$).pipe(first()).toPromise();
     recordList.forEach(async (record) => {
-      // console.log(record);
       await this.colletRecordData(projectId, record);
     });
-    // console.log(this.sessionData.currentIndex);
-    // console.log("getDataServer");
-    // console.log(recordList);
     this.sessionData.currentIndex += requestNum;
     return recordList;
   }
 
   async colletRecordData(projectId: string, record: any): Promise<void>{
-    // console.log(recordId)
     let rlas$;
     [this.recordLabelAssociationsQuery$, rlas$] =
     this.recordApolloService.getRecordLabelAssociations(projectId, record._id);
-    // console.log(rlas$);
     let result = await rlas$.pipe(first()).toPromise();
     result.forEach(element => {
-        console.log(element);
+        // console.log(element);
         if (element.confidence && element.sourceType === LabelSource.INFORMATION_SOURCE
           && element.informationSource.type === InformationSourceType.ZERO_SHOT)
         {
           record[element.sourceId] = {confidence: element.confidence, id: element.id, label: element.labelingTaskLabel};
-          // console.log(record);
-          // console.log(record[element.sourceId]);
         }
         if ( element.sourceType === LabelSource.MANUAL){
-          console.log(element.labelingTaskLabel.labelingTask.name);
+          // console.log(element.labelingTaskLabel.labelingTask.name);
           // rlasId represents only manual record lable associations
           record[element.labelingTaskLabel.labelingTask.name] = {labelId: element.labelingTaskLabelId, rlasId: element.id};
-          console.log(record[element.labelingTaskLabel.labelingTask.name]);
+          // console.log(record[element.labelingTaskLabel.labelingTask.name]);
         }
       });
   }
@@ -195,8 +170,8 @@ export class TbodyComponent implements OnInit {
     try{
       this.selection.selected.forEach(item => {
         const index: number = this.dataSource.data.findIndex(data => data === item);
-        console.log(this.project.id);
-        console.log(this.dataSource.data[index]);
+        // console.log(this.project.id);
+        // console.log(this.dataSource.data[index]);
         deletedIds.push(this.dataSource.data[index]._id);
         this.dataSource.data.splice(index, 1);
       });
@@ -273,8 +248,6 @@ export class TbodyComponent implements OnInit {
       this.sortOrder.sort((a, b) => a.order - b.order);
       // this.applyColumnOrder();
     }));
-    // console.log("PIPE FIRST");
-    // console.log(pipeFirst);
     return pipeFirst;
   }
 
@@ -345,7 +318,7 @@ export class TbodyComponent implements OnInit {
   generateColumns(): Array<any>{
     const columns: Column[] = [];
     this.sortOrder.forEach((attribute) => {
-      console.log(attribute);
+      // console.log(attribute);
       columns.push({
         columnDef: attribute.key as string,
         header: attribute.key as string,
@@ -358,7 +331,7 @@ export class TbodyComponent implements OnInit {
       });
     });
     this.labelingTaskColumns.forEach((labelingTask) => {
-      console.log(labelingTask);
+      // console.log(labelingTask);
       if (labelingTask.labels && labelingTask.labels.length > 3){
         window.alert("too many labels in one task, please, select less than four labels per task");
         throw Error("too many labels per task");
@@ -377,7 +350,7 @@ export class TbodyComponent implements OnInit {
       });
     });
     this.predictionsColumns.forEach((prediction => {
-      console.log(prediction);
+      // console.log(prediction);
       columns.push({
         columnDef: prediction.name as string,
         header: prediction.name as string,
@@ -409,45 +382,45 @@ export class TbodyComponent implements OnInit {
     // localStorage.setItem('sessionData', JSON.stringify(this.sessionData));
     // console.log(this.sessionData);
   }
-  labelClick(row: any, label: any, labelingTask: any): void{
+  async labelClick(row: any, label: any, labelingTask: any): Promise<void>{
     // console.log(row);
     // console.log(labelingTask);
     // console.log(label);
     if (row[labelingTask.columnDef]?.labelId === label.id){
       console.log("entrou");
-      row[labelingTask.columnDef].labelId = undefined;
-      row[labelingTask.columnDef].rlasId = undefined;
+      let response = await this.deleteRecordLabelAssociation(row._id, row[labelingTask.columnDef].rlasId);
+      console.log(response);
+      row[labelingTask.columnDef] = undefined;
+
     }
     else{
-      row[labelingTask.columnDef] = {labelId: label.id};
+      await this.addLabelToTask(row, labelingTask.id, label.id);
+      await this.colletRecordData(this.project.id, row);
     }
   }
 
-  addLabelToTask(recordData: any, labelingTaskId: string, labelId: string) {
+  async addLabelToTask(recordData: any, labelingTaskId: string, labelId: string) {
 
-    this.recordApolloService
+    await this.recordApolloService
       .addClassificationLabelsToRecord(
         this.project.id,
-        recordData.id,
+        recordData._id,
         labelingTaskId,
         labelId,
         // gold user thing
         null
       )
-      .pipe(first())
-      .subscribe();
+      .pipe(first()).toPromise();
   }
 
-  deleteRecordLabelAssociation(event: MouseEvent, associationId: string) {
-    // event.stopPropagation();
-    // this.somethingLoading = true;
-    // this.recordApolloService
-    //   .deleteRecordLabelAssociationById(
-    //     this.project.id,
-    //     this.fullRecordData.id,
-    //     [associationId]
-    //   ).pipe(first())
-    //   .subscribe();
+  async deleteRecordLabelAssociation(recordId: string , associationId: string) {
+    console.log(this.project.id);
+    return this.recordApolloService
+      .deleteRecordLabelAssociationById(
+        this.project.id,
+        recordId,
+        [associationId]
+      ).pipe(first()).toPromise();
     // if (this.loggedInUser.id != this.displayUserId) {
     //   if (this.fullRecordData.recordLabelAssociations.length == 0 ||
     //     (this.fullRecordData.recordLabelAssociations.length == 1 && this.fullRecordData.recordLabelAssociations[0].id == associationId)) {
