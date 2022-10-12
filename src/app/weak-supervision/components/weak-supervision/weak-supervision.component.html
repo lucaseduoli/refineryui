@@ -516,8 +516,8 @@
                 </div>
             </div>
             <ng-template #informationSourcesList>
-                <div class="overflow-y-auto" style="max-height: 93%;">
-                    <div class="mt-8"
+                <div class="overflow-y-auto" style="height: 90%;">
+                    <div class="mt-8 overflow-auto h-4/5"
                         [ngClass]="filteredSourcesList.length > 2 ? 'flex_container' : 'grid gap-6 grid-cols-3'">
                         <ng-template [ngIf]="filteredSourcesList.length == 0">
                             <span class="text-gray-500 text-base leading-6 font-normal mt-4">No heuristics for this

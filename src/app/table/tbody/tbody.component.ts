@@ -139,7 +139,7 @@ export class TbodyComponent implements OnInit {
     result.forEach(element => {
         // console.log(element);
         if (element.confidence && element.sourceType === LabelSource.INFORMATION_SOURCE
-          && element.informationSource.type === InformationSourceType.ZERO_SHOT)
+          && element.informationSource.type === InformationSourceType.ACTIVE_LEARNING)
         {
           record[element.sourceId] = {confidence: element.confidence, id: element.id, label: element.labelingTaskLabel};
         }
@@ -302,7 +302,7 @@ export class TbodyComponent implements OnInit {
             element.informationSources.forEach(infSOurce => {
               // console.log(infSOurce);
               // console.log(infSOurce.type);
-              if (infSOurce.type === InformationSourceType.ZERO_SHOT){
+              if (infSOurce.type === InformationSourceType.ACTIVE_LEARNING){
                 this.predictionsColumns.push(infSOurce);
               }
             });
