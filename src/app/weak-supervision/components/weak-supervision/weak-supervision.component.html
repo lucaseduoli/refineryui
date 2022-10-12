@@ -20,13 +20,13 @@
                 </div>
                 <div
                     class="grid grid-cols-2 sm:grid-cols-3 gap-4 md:flex md:gap-0 flex-row flex-nowrap items-center mt-4 xl:mt-0 ">
-                    <!-- <div class="flex justify-center overflow-visible">
-                        <button [routerLink]="['../knowledge-base']" data-tip="Go to the lookup lists"
+                    <div class="flex justify-center overflow-visible">
+                        <button data-tip="Create a new Model" (click)="executeOption('Active learning')"
                             class="tooltip tooltip-bottom bg-white text-gray-700 text-xs font-semibold mr-3 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Lookup lists
+                            New Model
                         </button>
-                    </div> -->
-                    <ng-template [ngIf]="labelingTasks && labelingTasks.length > 0" [ngIfElse]="noTasks">
+                    </div>
+                    <!-- <ng-template [ngIf]="labelingTasks && labelingTasks.length > 0" [ngIfElse]="noTasks">
                         <kern-dropdown class="mr-3" [dropdownOptions]="{
                             optionArray: ['Zero-shot'],
                             optionIcons: ['zero-shot'],
@@ -34,7 +34,7 @@
                             buttonTooltip: ''
                         }" (optionClicked)="executeOption($event)">
                         </kern-dropdown>
-                    </ng-template>
+                    </ng-template> -->
                     <ng-template #noTasks>
                         <div data-tip="At least one labeling task is needed to create Heuristics"
                             class="tooltip tooltip-bottom">
