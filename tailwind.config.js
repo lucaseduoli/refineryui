@@ -65,7 +65,7 @@ module.exports = {
       black: colors.black,
       white: colors.white,
       gray: colors.gray,
-
+      dark: "#1B1F24",
       red: colors.red,
       orange: colors.orange,
       amber: colors.amber,
@@ -83,6 +83,13 @@ module.exports = {
       fuchsia: colors.fuchsia,
       pink: colors.pink,
       rose: colors.rose,
+      'logspace':{
+        DEFAULT: "#2A2340",
+        dark: "#1B1F24",
+        gray: "#747C92",
+        blue: "#312E81",
+        light_blue: "#EDF7F6",
+      },
       kerngreen: {
         DEFAULT: "#8CF3C3"
       },

@@ -1,4 +1,4 @@
-<div *ngIf="project$ | async as project" class="p-4 bg-gray-100 flex-1 flex flex-col"
+<div *ngIf="project$ | async as project" class="p-4 bg-gray-100 flex-1 flex flex-col h-full overflow-y-auto"
     [ngClass]="graphsHaveValues ? '' : 'h-full'">
 
     <nav class="flex" aria-label="Breadcrumb">
