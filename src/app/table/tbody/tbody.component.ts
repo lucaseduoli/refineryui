@@ -175,15 +175,15 @@ export class TbodyComponent implements OnInit {
         deletedIds.push(this.dataSource.data[index]._id);
         this.dataSource.data.splice(index, 1);
       });
-      let response =  await this.recordApolloService.deleteByRecordIds(this.project.id, deletedIds).toPromise();
-      console.log(response);
-      if(!(response.data as any).deleteRecords.ok){
-        throw Error("server side error");
-      }
-      this.selection.clear();
-      this.concatData();
-      this.dataSource._updateChangeSubscription();
-      this.dataSource.sort = this.sort;
+      // let response =  await this.recordApolloService.deleteByRecordIds(this.project.id, deletedIds).toPromise();
+      // console.log(response);
+      // if(!(response.data as any).deleteRecords.ok){
+      //   throw Error("server side error");
+      // }
+      // this.selection.clear();
+      // this.concatData();
+      // this.dataSource._updateChangeSubscription();
+      // this.dataSource.sort = this.sort;
 
     }
     catch (error) {

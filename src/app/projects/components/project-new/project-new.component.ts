@@ -134,9 +134,11 @@ export class ProjectNewComponent implements OnInit {
     });
 
     if (this.submitted && this.hasFileUploaded) {
+      console.log("entrou");
       this.projectApolloService
         .createProject(this.createNewProject.get('projectTitle').value.trim(), this.createNewProject.get('description').value.trim())
         .pipe(first()).subscribe((p: Project) => {
+          console.log(p)
           this.project = p;
           this.uploadRecordsComponent.projectId = p.id;
           this.uploadRecordsComponent.selectedTokenizer = this.createNewProject.get('tokenizerForm').value;
