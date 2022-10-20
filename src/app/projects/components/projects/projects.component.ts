@@ -78,6 +78,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   project$: Observable<Project>;
   project: Project;
   user$: any;
+  user: any;
   avatarUri: string;
   @ViewChild(UploadComponent) uploadComponent;
   file: File;
@@ -122,12 +123,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       });
     this.organizationApolloService.getUserInfo().pipe(first())
       .subscribe((user) => {
+        this.user = user;
         const avatarSelector = (user.firstName[0].charCodeAt(0) + user.lastName[0].charCodeAt(0)) % 5;
         this.avatarUri = "assets/avatars/" + avatarSelector + ".png"
         if (this.organizationInactive) {
           this.createDefaultOrg(user);
-        } else {
-          this.isManaged = ConfigManager.getIsManaged();
         }
       });
     this.checkIfDemoUser();
@@ -138,6 +138,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       timer(250).subscribe(() => this.checkIfDemoUser());
       return;
     }
+    this.isManaged = ConfigManager.getIsManaged();
     this.isDemoUser = ConfigManager.getIsDemo() && !ConfigManager.getIsAdmin();
   }
 
@@ -288,12 +289,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   manageProject(projectId: string, recordsInProject: Number): void {
-    if (recordsInProject == 0) {
-      this.router.navigate(['projects', projectId, 'settings']);
+    if (this.user?.role == 'ENGINEER') {
+      if (recordsInProject == 0) {
+        this.router.navigate(['projects', projectId, 'settings']);
+      } else {
+        this.router.navigate(['projects', projectId, 'overview']);
+      }
     } else {
-      this.router.navigate(['projects', projectId, 'overview']);
+      this.router.navigate(['projects', projectId, 'labeling']);
     }
-
   }
 
   handleWebsocketNotification(msgParts) {

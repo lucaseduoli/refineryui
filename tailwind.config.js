@@ -48,9 +48,10 @@ module.exports = {
       /(bg)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(100|200)/,
       /(border)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(400)/,
       /(text)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(700)/,
-      /(text)-(red|yellow|green|blue)-(800)/,
+      /(text)-(red|yellow|green|blue|indigo)-(800)/,
       /(text)-(white|black)/,
-      /(bg)-(gray)-(700)/
+      /(bg)-(gray)-(700)/,
+      /(text)-(lime)-(300)/,
     ],
     options: {
       keyframes: true,

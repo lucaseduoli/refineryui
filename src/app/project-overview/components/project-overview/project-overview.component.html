@@ -1,11 +1,10 @@
-<div *ngIf="project$ | async as project" class="p-4 bg-gray-100 flex-1 flex flex-col h-full overflow-y-auto"
-    [ngClass]="graphsHaveValues ? '' : 'h-full'">
+<div *ngIf="project$ | async as project" class="p-4 bg-gray-100 flex-1 flex flex-col min-h-full overflow-y-auto">
 
     <nav class="flex" aria-label="Breadcrumb">
         <ol role="list" class="grid grid-cols-1-max sm:grid-cols-2-max lg:grid-cols-4-max gap-1 items-center">
             <li>
                 <div>
-                    <div data-tip="Choose the visualizations" class="tooltip tooltip-right relative z-50">
+                    <div data-tip="Choose the visualizations" class="tooltip tooltip-right relative z-10">
                         <span class="cursor-help mr-2 underline text-black-800"
                             style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Visualizations</span>
                     </div>
@@ -23,7 +22,7 @@
                         fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
                     </svg>
-                    <div data-tip="Choose the target type" class="tooltip tooltip-bottom relative z-50">
+                    <div data-tip="Choose the target type" class="tooltip tooltip-bottom relative z-10">
                         <span class="cursor-help cursor-help mr-2 underline text-black-800"
                             style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Target</span>
                     </div>
@@ -40,7 +39,7 @@
                         fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
                     </svg>
-                    <div data-tip="Choose the labeling task" class="tooltip tooltip-bottom relative z-50">
+                    <div data-tip="Choose the labeling task" class="tooltip tooltip-bottom relative z-10">
                         <span class="cursor-help mr-2 underline text-black-800"
                             style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Labeling
                             task</span>
@@ -60,7 +59,7 @@
                         <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
                     </svg>
                     <div data-tip="Choose the filter. Only static ones can be used"
-                        class="tooltip tooltip-bottom relative z-50">
+                        class="tooltip tooltip-bottom relative z-10">
                         <span class="cursor-help mr-2 underline text-black-800"
                             style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Filter</span>
                     </div>
@@ -77,7 +76,7 @@
 
     <div>
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden">
+            <div class="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 shadow rounded-lg">
                 <dt>
                     <div class="absolute bg-yellow-500 rounded-md p-3">
                         <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -93,10 +92,12 @@
                         <kern-loading></kern-loading>
                     </ng-template>
                     <ng-template #showStatsM>
-                        <p class="text-2xl font-semibold text-gray-900 tooltip"
-                            [attr.data-tip]="projectStats.general['MANUAL']">
-                            {{projectStats.generalStats["MANUAL"] | percentRound: 2}}
-                        </p>
+                        <div class="tooltip" [attr.data-tip]="projectStats.general['MANUAL']">
+                            <p class="text-2xl font-semibold text-gray-900">
+                                {{projectStats.generalStats["MANUAL"] | percentRound: 2}}
+                            </p>
+                        </div>
+
                     </ng-template>
                     <div class="absolute bottom-0 inset-x-0 bg-gray-50 px-4 py-4 sm:px-6">
                         <div class="text-sm">
@@ -107,7 +108,7 @@
                 </dd>
             </div>
 
-            <div class="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden">
+            <div class="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 shadow rounded-lg">
                 <dt>
                     <div class="absolute bg-green-500 rounded-md p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
@@ -123,14 +124,15 @@
                         <kern-loading color="green"></kern-loading>
                     </ng-template>
                     <ng-template #showStatsWS>
-                        <p class="text-2xl font-semibold text-gray-900 tooltip"
-                            [attr.data-tip]="projectStats.general['WEAK_SUPERVISION']">
-                            {{projectStats.generalStats["WEAK_SUPERVISION"]| percentRound: 2}}
-                        </p>
+                        <div class="tooltip" [attr.data-tip]="projectStats.general['WEAK_SUPERVISION']">
+                            <p class="text-2xl font-semibold text-gray-900">
+                                {{projectStats.generalStats["WEAK_SUPERVISION"]| percentRound: 2}}
+                            </p>
+                        </div>
                     </ng-template>
                     <div class="absolute bottom-0 inset-x-0 bg-gray-50 px-4 py-4 sm:px-6">
                         <div class="text-sm">
-                            <a class="font-medium text-green-700 hover:text-green-500">Manage runs <span
+                            <a class="font-medium text-green-700">Manage runs <span
                                     class="bg-white text-gray-800 rounded-lg text-xs px-2.5 py-0.5 border border-gray-300">Coming
                                     soon!</span></a>
                         </div>
@@ -154,11 +156,12 @@
                         <kern-loading color="red"></kern-loading>
                     </ng-template>
                     <ng-template #showStatsIS>
-                        <p class="text-2xl font-semibold text-gray-900 tooltip relative z-10"
-                            style="white-space: break-spaces;"
-                            [attr.data-tip]="projectStats.general['INFORMATION_SOURCE']">
-                            {{projectStats.generalPercent["INFORMATION_SOURCE"]}}
-                        </p>
+                        <div class="tooltip" [attr.data-tip]="projectStats.general['INFORMATION_SOURCE']"
+                            style="white-space: break-spaces;">
+                            <p class="text-2xl font-semibold text-gray-900 relative z-10">
+                                {{projectStats.generalPercent["INFORMATION_SOURCE"]}}
+                            </p>
+                        </div>
                     </ng-template>
                     <div class="absolute bottom-0 inset-x-0 bg-gray-50 px-4 py-4 sm:px-6">
                         <div class="text-sm">
@@ -169,7 +172,7 @@
                 </dd>
             </div>
 
-            <div class="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden">
+            <div class="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 shadow rounded-lg">
                 <dt>
                     <div class="absolute bg-blue-500 rounded-md p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
@@ -185,10 +188,12 @@
                         <kern-loading color="blue"></kern-loading>
                     </ng-template>
                     <ng-template #showStatsIA>
-                        <p class="text-2xl font-semibold text-gray-900 tooltip"
-                            [attr.data-tip]="projectStats.interAnnotator">
-                            {{projectStats.interAnnotatorStat == -1 ? 'n/a' : interAnnotatorStat | percentRound: 2 }}
-                        </p>
+                        <div class="tooltip" [attr.data-tip]="projectStats.interAnnotator">
+                            <p class="text-2xl font-semibold text-gray-900">
+                                {{projectStats.interAnnotatorStat == -1 ? 'n/a' : interAnnotatorStat | percentRound: 2
+                                }}
+                            </p>
+                        </div>
                     </ng-template>
                     <div class="absolute bottom-0 inset-x-0 bg-gray-50 px-4 py-4 sm:px-6">
                         <div class="text-sm">
@@ -220,6 +225,22 @@
         </div>
 
         <div class="mt-8 w-2/4 grid w-full"
+            [ngClass]="displayGraphsForm.value == DisplayGraphsType.ALL || displayGraphsForm.value == DisplayGraphsType.CONFIDENCE_DISTRIBUTION?null:'hidden'">
+            <div class="text-lg leading-6 text-gray-900 font-medium inline-block">
+                Confidence distribution
+            </div>
+            <div class="mt-1 text-sm leading-5 font-medium text-gray-700 inline-block">See the confidence distribution
+                of your weakly supervised records.</div>
+            <div class="mt-2 w-full h-full shadow stats bg-white grid place-items-center flex-grow">
+                <div style="width:100%;height:100%;padding-left:20px;padding-right:20px;padding-top:20px;padding-bottom:20px;"
+                    *ngIf="lineChartData">
+                    <kern-confidence-line-chart [dataInput]="lineChartData">
+                    </kern-confidence-line-chart>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 w-2/4 grid w-full"
             [ngClass]="displayGraphsForm.value == DisplayGraphsType.ALL || displayGraphsForm.value == DisplayGraphsType.CONFUSION_MATRIX?null:'hidden'">
             <div class="text-lg leading-6 text-gray-900 font-medium inline-block">
                 Confusion matrix
@@ -243,7 +264,7 @@
             </div>
         </div>
 
-        <div class="mt-8 w-2/4 grid w-full mb-48"
+        <div class="mt-8 w-2/4 grid w-full"
             [ngClass]="displayGraphsForm.value == DisplayGraphsType.ALL || displayGraphsForm.value == DisplayGraphsType.INTER_ANNOTATOR?null:'hidden'">
             <div class="text-lg leading-6 text-gray-900 font-medium inline-block">
                 Inter annotator agreement
@@ -251,16 +272,53 @@
             <div class="mt-1 text-sm leading-5 font-medium text-gray-700 inline-block">See how users agree or disagree
                 on redundantely labeled records.</div>
             <ng-template [ngIf]="interAnnotatorMatrix">
-                <div class="mt-2 w-full shadow stats bg-white grid place-items-center flex-grow">
-                    <div style="width:100%;height:100%;padding-left:20px;padding-right:20px;padding-top:20px;padding-bottom:20px;"
-                        *ngIf="interAnnotatorMatrix.countNames > 1 + (goldUserRequested?1:0);else noData">
-                        <kern-inter-annotator [data]="interAnnotatorMatrix"></kern-inter-annotator>
+                <div>
+                    <div *ngIf="interAnnotatorMatrix.countNames > 1 + (goldUserRequested?1:0);else noData">
+                        <div class="mt-2 w-full shadow stats bg-white grid place-items-center flex-grow"
+                            style="width:100%;height:100%;padding-left:20px;padding-right:20px;padding-top:20px;padding-bottom:20px;">
+                            <kern-inter-annotator [data]="interAnnotatorMatrix"></kern-inter-annotator>
+                        </div>
                     </div>
                     <ng-template #noData>
-                        <div class="stat-title flex items-center w-full p-4" style="height:50px">It seems like you're
-                            working
-                            on this project by yourself. <br>If you want to include other team members to see the
-                            inter-annotator agreement, check out our hosted version.
+                        <div *ngIf="!isManaged" class="mt-2">
+                            <div
+                                class="overflow-hidden h-80 rounded-lg bg-indigo-700 shadow-xl lg:grid lg:grid-cols-2 lg:gap-4">
+                                <div class="px-6 pt-10 pb-12 sm:px-12 sm:pt-12 lg:py-12 lg:pr-0 xl:py-16 xl:px-16">
+                                    <div class="lg:self-center">
+                                        <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                                            <span class="block">Do you require multi-user analytics?</span>
+                                        </h2>
+                                        <p class="mt-4 text-lg leading-6 text-indigo-200">Our open-source <span
+                                                class="font-dmMono">refinery</span> comes with a managed multi-user
+                                            version in
+                                            the cloud, as well as an enterprise solution for on-premises deployment.
+                                        </p>
+                                        <a href="./users"
+                                            class="mt-8 inline-flex items-center rounded-md border border-transparent bg-white px-5 py-3 text-base font-medium text-indigo-600 shadow hover:bg-indigo-50">See
+                                            our options</a>
+                                    </div>
+                                </div>
+                                <div class="">
+                                    <img class=""
+                                        src="https://images.unsplash.com/photo-1576502202167-791eca35a78d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2081&q=80"
+                                        alt="App screenshot">
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="isManaged" class="mt-2">
+                            <div class="mt-2 w-full shadow stats bg-white grid place-items-center flex-grow"
+                                style="width:100%;height:100%;padding-left:20px;padding-right:20px;padding-top:20px;padding-bottom:20px;">
+                                <div class="text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 48 48" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <h2 class="mt-2 text-lg font-medium text-gray-900">Label more data</h2>
+                                    <p class="mt-1 text-sm text-gray-500">None of your records are labeled redundantely
+                                        yet.</p>
+                                </div>
+                            </div>
                         </div>
                     </ng-template>
                 </div>

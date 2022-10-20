@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import { map } from 'rxjs/operators';
+import { parseLogData } from 'src/app/util/helper-functions';
 import { InformationSourceType, informationSourceTypeToString, LabelSource } from '../../enum/graphql-enums';
 import { ApolloChecker } from '../base/apollo-checker';
 import { mutations } from './weak-source-mutations';
@@ -40,6 +41,7 @@ export class WeakSourceApolloService {
       ],
     });
   }
+
 
   createInformationSource(
     projectId: string,
@@ -145,15 +147,7 @@ export class WeakSourceApolloService {
       variables: {
         projectId: projectId,
         informationSourceId: informationSourceId,
-      }, refetchQueries: [
-        {
-          query: queries.GET_INFORMATION_SOURCE_BY_SOURCE_ID,
-          variables: {
-            projectId: projectId,
-            informationSourceId: informationSourceId,
-          },
-        },
-      ],
+      }
     });
   }
 
@@ -164,11 +158,35 @@ export class WeakSourceApolloService {
         variables: {
           projectId: projectId,
         },
-        fetchPolicy: 'cache-and-network'
+        fetchPolicy: 'no-cache'
       });
     const vc = query.valueChanges.pipe(
       map((result) => {
         let tmp = result['data']['informationSourcesOverviewData'];
+        if (!tmp) return [];
+        return JSON.parse(tmp).map((source) => {
+          source.labelSource = LabelSource.INFORMATION_SOURCE;
+          source.stats = this.mapInformationSourceStatsGlobal(source.stat_data);
+          return source;
+        });
+      })
+
+    );
+    return [query, vc];
+  }
+
+  getModelCallbacksOverviewData(projectId: string) {
+    const query = this.apollo
+      .watchQuery({
+        query: queries.GET_MODEL_CALLBACKS_OVERVIEW_DATA,
+        variables: {
+          projectId: projectId,
+        },
+        fetchPolicy: 'cache-and-network'
+      });
+    const vc = query.valueChanges.pipe(
+      map((result) => {
+        let tmp = result['data']['modelCallbacksOverviewData'];
         if (!tmp) return [];
         return JSON.parse(tmp).map((source) => {
           source.labelSource = LabelSource.INFORMATION_SOURCE;
@@ -297,35 +315,15 @@ export class WeakSourceApolloService {
           projectId: projectId,
           payloadId: taskId,
         },
-        fetchPolicy: 'cache-and-network',
+        fetchPolicy: 'no-cache',
       });
     const vc = query
       .valueChanges.pipe(
         map((result) => {
-          let task = result['data']['payloadByPayloadId'];
-          let neededIDLength = task['logs']
-            ? String(task['logs'].length).length
-            : 0;
-          return {
-            id: task['id'],
-            createdAt: task['createdAt'],
-            state: task['state'],
-            iteration: task['iteration'],
-            logs: !task['logs']
-              ? [`Running ${informationSourceTypeToString(task['informationSource']['type'], false)}...`]
-              : task['logs'].map((wrapper, index) => {
-                let d: Date = new Date(
-                  wrapper.substr(0, wrapper.indexOf(' '))
-                );
-                return (
-                  String(index + 1).padStart(neededIDLength, '0') +
-                  ': ' +
-                  d.toLocaleString() +
-                  ' - ' +
-                  wrapper.substr(wrapper.indexOf(' ') + 1)
-                );
-              }),
-          };
+          const payload = result['data']['payloadByPayloadId'];
+          if (payload == null) return null;
+          payload.logs = parseLogData(payload['logs'], payload['informationSource']['type']);
+          return payload;
         })
       );
     return [query, vc]
@@ -426,6 +424,80 @@ export class WeakSourceApolloService {
         value: value
       },
     });
+  }
+
+  setAllModelCallbacks(projectId: string, value: boolean) {
+    return this.apollo.mutate({
+      mutation: mutations.SET_ALL_MODEL_CALLBACKS,
+      variables: {
+        projectId: projectId,
+        value: value
+      },
+    });
+  }
+
+  getModelProviderInfo() {
+    const query = this.apollo
+      .watchQuery({
+        query: queries.GET_MODEL_PROVIDER_INFO,
+        fetchPolicy: 'network-only', // Used for first execution
+        nextFetchPolicy: 'cache-first', // Used for subsequent executions (refetch query updates the cache != triggers the function)
+      });
+    const vc = query.valueChanges.pipe(
+      map((result) => result['data']['modelProviderInfo'])
+    );
+    return [query, vc]
+  }
+
+  downloadModel(name: string) {
+    return this.apollo.mutate({
+      mutation: mutations.MODEL_PROVIDER_DOWNLOAD_MODEL,
+      variables: {
+        modelName: name
+      }
+    });
+  }
+
+  deleteModel(name: string) {
+    return this.apollo.mutate({
+      mutation: mutations.MODEL_PROVIDER_DELETE_MODEL,
+      variables: {
+        modelName: name
+      },
+      refetchQueries: [
+        {
+          query: queries.GET_MODEL_PROVIDER_INFO
+        },
+      ],
+    });
+  }
+
+  getLabelingFunctionOn10Records(projectId: string, informationSourceId: string) {
+    return this.apollo
+      .query({
+        query: queries.GET_LABELING_FUNCTION_ON_10_RECORDS,
+        variables: {
+          projectId: projectId,
+          informationSourceId: informationSourceId
+        },
+        fetchPolicy: 'no-cache'
+      }).pipe(
+        map((result) => {
+          const lfRun = result['data']['getLabelingFunctionOn10Records'];
+          if (lfRun == null) return null;
+          return {
+            records: lfRun['records'].map((record, index) => {
+              return {
+                calculatedLabels: record['calculatedLabels'],
+                fullRecordData: record['fullRecordData'],
+                recordId: record['recordId']
+              }
+            }),
+            codeHasErrors: lfRun['codeHasErrors'],
+            containerLogs: parseLogData(lfRun['containerLogs'], InformationSourceType.LABELING_FUNCTION)
+          };
+        })
+      );
   }
 
 }

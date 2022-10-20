@@ -3,7 +3,8 @@
 
         <div #stickyHeader class="pt-2 sticky -top-2 z-40 h-12">
             <div class="bg-white flex-grow " [ngClass]="isHeaderNormal?'':'shadow'">
-                <div class="flex-row justify-start items-center inline-block" style="transition: all .25s ease-in-out;" [ngClass]="isHeaderNormal?'p-0':'flex py-2'">
+                <div class="flex-row justify-start items-center inline-block" style="transition: all .25s ease-in-out;"
+                    [ngClass]="isHeaderNormal?'p-0':'flex py-2'">
 
                     <button [routerLink]="['../../heuristics']" class="text-green-800 text-sm font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block" fill="none"
@@ -30,7 +31,7 @@
             <div class="grid gap-4 " [ngClass]="isHeaderNormal ? 'grid-cols-2' : 'grid-cols-1'">
                 <div class="flex items-center mt-2" *ngIf="isHeaderNormal">
                     <button (click)="openName(true)" data-tip="Edit your heuristic's name"
-                        class="tooltip tooltip-right flex-shrink-0 bg-white text-gray-700 text-xs font-semibold mr-3 px-4 py-2 rounded-md border border-gray-300 block float-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="tooltip tooltip-right flex-shrink-0 bg-white text-gray-700 text-xs font-semibold mr-3 px-4 py-2 rounded-md border border-gray-300 block float-left hover:bg-gray-50 focus:outline-none">
                         Edit name
                     </button>
 
@@ -50,7 +51,7 @@
 
                 <div class="flex items-center mt-2">
                     <button (click)="openDescription(true)" data-tip="Edit your heuristic's description"
-                        class="tooltip tooltip-right flex-shrink-0 bg-white text-gray-700 text-xs font-semibold mr-3 px-4 py-2 rounded-md border border-gray-300 block float-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="tooltip tooltip-right flex-shrink-0 bg-white text-gray-700 text-xs font-semibold mr-3 px-4 py-2 rounded-md border border-gray-300 block float-left hover:bg-gray-50 focus:outline-none">
                         Edit description
                     </button>
                     <div class="inline-block" (dblclick)="openDescription(true,project.id)" class="inline-flex w-full">
@@ -106,13 +107,14 @@
                     <!-- <div class="flex flex-row flex-nowrap items-center">
                         <div class="flex items-center justify-center"
                             *ngIf="informationSource.informationSourceType == 'LABELING_FUNCTION'">
-                            <a href="https://github.com/code-kern-ai/template-functions" target="_blank" data-tip="Go to GitHub repository"
-                                class="tooltip tooltip-left bg-white text-gray-700 text-xs font-semibold  px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <a href="https://github.com/code-kern-ai/template-functions" target="_blank"
+                                data-tip="Go to GitHub repository"
+                                class="tooltip tooltip-left bg-white text-gray-700 text-xs font-semibold  px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none">
                                 See function templates
                             </a>
-                            <a href="https://github.com/code-kern-ai/refinery-lf-exec-env/blob/dev/requirements.txt" target="_blank"
-                                data-tip="See available libraries for this labeling function"
-                                class="ml-2 tooltip tooltip-left bg-white text-gray-700 text-xs font-semibold  px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <a href="https://github.com/code-kern-ai/refinery-lf-exec-env/blob/dev/requirements.txt"
+                                target="_blank" data-tip="See available libraries for this labeling function"
+                                class="ml-2 tooltip tooltip-left bg-white text-gray-700 text-xs font-semibold  px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none">
                                 See installed libraries
                             </a>
                         </div>
@@ -173,12 +175,33 @@
                         <div class="text-sm font-normal text-gray-500">Saving...</div>
                         <kern-loading color="indigo"></kern-loading>
                     </div>
+                    <div *ngIf="justClickedRun" class="flex items-center">
+                        <kern-loading color="indigo"></kern-loading>
+                    </div>
+                    <div class="flex items-center mr-2"
+                        *ngIf="informationSource.informationSourceType == 'LABELING_FUNCTION'">
+                        <kern-dropdown [dropdownOptions]="{
+                            optionArray: attributes,
+                            buttonCaption:selectedAttribute ? selectedAttribute : 'Select display attribute'
+                        }" (optionClicked)="selectedAttribute = $event">
+                        </kern-dropdown>
+                    </div>
+                    <div [attr.data-tip]="hasUnsavedChanges() ? 'Unsaved Changes detected': selectedAttribute == '' ? 'Select an attribute' : 'Runs function on 10 records'"
+                        class="tooltip tooltip-left"
+                        *ngIf="informationSource.informationSourceType == 'LABELING_FUNCTION'">
+                        <button (click)="getLabelingFunctionOn10Records(project.id)"
+                            [ngClass]="hasUnsavedChanges() || justClickedRun || selectedAttribute =='' ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'"
+                            [disabled]="hasUnsavedChanges() || justClickedRun || selectedAttribute ==''"
+                            class="bg-white text-gray-700 text-xs font-semibold px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none">
+                            Run on 10
+                        </button>
+                    </div>
                     <div [attr.data-tip]="hasUnsavedChanges() ? 'Unsaved Changes detected':'Creates a task to run the function'"
                         class="tooltip tooltip-left">
                         <button (click)="runInformationSource(project.id)"
                             [ngClass]="hasUnsavedChanges() || !canStartISRun() ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'"
                             [disabled]="hasUnsavedChanges() || !canStartISRun()"
-                            class="text-xs font-medium px-4 py-2 rounded-md border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="ml-2 text-xs font-medium px-4 py-2 rounded-md border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none">
                             Run
                         </button>
                     </div>
@@ -186,7 +209,7 @@
                         <button #runWithWS (click)="runInformationSourceAndWeaklySupervise(project.id)"
                             [ngClass]="runWithWS.disabled ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'"
                             [disabled]="hasUnsavedChanges() || !canStartISRun()"
-                            class="ml-2 text-white text-xs font-medium px-4 py-2 rounded-md border bg-indigo-700 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="ml-2 text-white text-xs font-medium px-4 py-2 rounded-md border bg-indigo-700 hover:bg-indigo-800 focus:outline-none">
                             Run + weakly supervise
                         </button>
                     </div> -->
@@ -197,6 +220,7 @@
                 <div class="font-medium text-gray-700 inline-block">Container Logs</div>
                 <div class="inline-block">
                     <button *ngIf="lastTask$ | async as task; else disabledIcon"
+                        [ngClass]="task ? 'tooltip tooltip-top' : ''" [attr.data-tip]="task? 'Click to copy' : ''"
                         (click)="copyToClipboard(task.logs.join('\n'),0)">
                         <svg xmlns="http://www.w3.org/2000/svg"
                             class="transition-all duration-500 ease-in-out  h-6 w-6 text-gray-600 cursor-pointer inline-block"
@@ -334,7 +358,7 @@
 
                 <div data-tip="This can't be reverted!" class="tooltip tooltip-right">
                     <label [for]="'delete-modal-'+informationSource.id"
-                        class="bg-red-100 text-red-700 border border-red-400 text-xs font-semibold px-4 py-2 rounded-md cursor-pointer ml-6 h-9 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        class="bg-red-100 text-red-700 border border-red-400 text-xs font-semibold px-4 py-2 rounded-md cursor-pointer ml-6 h-9 hover:bg-red-200 focus:outline-none">
                         Delete {{ informationSource.name}}
                     </label>
                 </div>
@@ -348,14 +372,54 @@
 
                         <div class="modal-action text-center mt-0">
                             <label [for]="'delete-modal-'+informationSource.id"
-                                class="bg-red-100 text-red-700 border border-red-400 text-xs font-semibold mr-2 px-4 py-2 rounded flex cursor-pointer inline-block hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                class="bg-red-100 text-red-700 border border-red-400 text-xs font-semibold mr-2 px-4 py-2 rounded flex cursor-pointer inline-block hover:bg-red-200 focus:outline-none"
                                 [routerLink]="['../']"
                                 (click)="deleteInformationSource(project.id, informationSource.id)">Delete</label>
                             <label [for]="'delete-modal-'+informationSource.id"
-                                class="bg-white text-gray-700 text-xs font-semibold mr-4 px-4 py-2 rounded border border-gray-300 cursor-pointer inline-block hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Close</label>
+                                class="bg-white text-gray-700 text-xs font-semibold mr-4 px-4 py-2 rounded border border-gray-300 cursor-pointer inline-block hover:bg-gray-50 focus:outline-none">Close</label>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="checkbox" id="attribute-details" class="modal-toggle">
+<div class="modal text-center items-center">
+    <div *ngIf="currentRecordIdx != -1" class="modal-box" style="max-width: 48rem;">
+        <div *ngIf="sampleRecords.records[currentRecordIdx] as record">
+            <h1 class="text-lg text-gray-900 mb-2">View details</h1>
+            <div class="text-sm text-gray-500 my-2" class="overflow-y-auto max-height-modal scrollable-size">
+                <div *ngFor="let att of attributes" class="text-sm leading-5 text-left my-3">
+                    <div class="text-gray-900 font-bold">{{att.name}}</div>
+                    <div class="text-gray-500 font-normal">
+                        {{record.fullRecordData[att.name]}}
+                    </div>
+                </div>
+                <div class="text-sm leading-5 text-left text-gray-900 font-bold">
+                    Label data
+
+                    <div class="flex flex-row items-center">
+                        <div *ngFor="let kv of record.calculatedLabelsResult | keyvalue"
+                            class="mr-2 flex flex-row flex-nowrap items-center">
+                            <span *ngIf="kv.value.displayAmount" class="text-xs text-gray-500 font-normal">
+                                {{kv.value.count}}x
+                            </span>
+                            <label
+                                [ngClass]="[getBackground(kv.value.color), getText(kv.value.color), getBorder(kv.value.color), getHover(kv.value.color)]"
+                                class="border inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border">
+                                {{kv.value.label}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-action text-center">
+                <label for="attribute-details"
+                    class="bg-white text-gray-700 text-xs font-semibold mr-4 px-4 py-2 rounded border border-gray-300 cursor-pointer hover:bg-gray-50 focus:outline-none inline-block">Close</label>
             </div>
         </div>
     </div>

@@ -9,22 +9,20 @@ import {
   QueryList,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl } from '@angular/forms';
 import { first } from 'rxjs/operators';
 import { ProjectApolloService } from 'src/app/base/services/project/project-apollo.service';
 import { RouteService } from 'src/app/base/services/route.service';
 import { WeakSourceApolloService } from 'src/app/base/services/weak-source/weak-source-apollo.service';
-import {
-  debounceTime,
-  startWith,
-  distinctUntilChanged,
-} from 'rxjs/operators';
-import { combineLatest, Subscription, timer } from 'rxjs';
+
+import { combineLatest, forkJoin, Subscription, timer } from 'rxjs';
 import { InformationSourceType, informationSourceTypeToString, LabelingTask, LabelSource } from 'src/app/base/enum/graphql-enums';
 import { dateAsUTCDate } from 'src/app/util/helper-functions';
 import { NotificationService } from 'src/app/base/services/notification.service';
 import { schemeCategory24 } from 'src/app/util/colors';
 import { parseToSettingsJson, parseZeroShotSettings, ZeroShotSettings } from './zero-shot-settings';
+import { ConfigManager } from 'src/app/base/services/config-service';
+import { UserManager } from 'src/app/util/user-manager';
+import { CommentDataManager, CommentType } from 'src/app/base/components/comment/comment-helper';
 
 @Component({
   selector: 'kern-zero-shot-details',
@@ -62,7 +60,6 @@ export class ZeroShotDetailsComponent
   labelColor: Map<string, Map<string, string>> = new Map<string, Map<string, string>>();
   labelingTasksClassification: any[];
   labelingTasksSortOrder = [];
-  useTaskLabels: boolean = true;
   zeroShotRecommendations: any;
   isModelDownloading: boolean = false;
 
@@ -88,6 +85,11 @@ export class ZeroShotDetailsComponent
   specificRunTaskInformation$: any;
   status: string;
   confidenceIntervals = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+  downloadedModelsList$: any;
+  downloadedModelsQuery$: any;
+  downloadedModels: any[];
+  modelsDownloadedState: boolean[] = [];
+  isManaged: boolean = true;
 
   constructor(
     private router: Router,
@@ -98,6 +100,7 @@ export class ZeroShotDetailsComponent
   ) { }
 
   ngOnInit(): void {
+    UserManager.checkUserAndRedirect(this);
     this.routeService.updateActivatedRoute(this.activatedRoute);
     const projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
     this.status = this.activatedRoute.parent.snapshot.queryParams.status;
@@ -105,16 +108,35 @@ export class ZeroShotDetailsComponent
     let tasks$ = [];
     tasks$.push(this.prepareLabelingTaskRequest(projectId));
     tasks$.push(project$.pipe(first()));
-    tasks$.push(this.prepareAttributes(projectId).pipe(first()));
+    tasks$.push(this.prepareAttributes(projectId));
     this.prepareZeroShotRecommendations(projectId);
     this.subscriptions$.push(project$.subscribe((project) => this.project = project));
-    combineLatest(tasks$).subscribe(() => this.prepareInformationSource(projectId));
+    forkJoin(tasks$).subscribe(() => this.prepareInformationSource(projectId));
+
+    [this.downloadedModelsQuery$, this.downloadedModelsList$] = this.informationSourceApolloService.getModelProviderInfo();
+    this.subscriptions$.push(
+      this.downloadedModelsList$.subscribe((downloadedModels) => {
+        this.downloadedModels = downloadedModels;
+        this.createModelsDownloadedStateList();
+      }));
+
+    this.checkIfManagedVersion();
 
     NotificationService.subscribeToNotification(this, {
       projectId: projectId,
       whitelist: this.getWhiteListNotificationService(),
       func: this.handleWebsocketNotification
     });
+    this.setUpCommentRequests(projectId);
+  }
+
+  private setUpCommentRequests(projectId: string) {
+    const requests = [];
+    requests.push({ commentType: CommentType.ATTRIBUTE, projectId: projectId });
+    requests.push({ commentType: CommentType.LABELING_TASK, projectId: projectId });
+    requests.push({ commentType: CommentType.HEURISTIC, projectId: projectId });
+    requests.push({ commentType: CommentType.LABEL, projectId: projectId });
+    CommentDataManager.registerCommentRequests(this, requests);
   }
 
   getWhiteListNotificationService(): string[] {
@@ -127,12 +149,22 @@ export class ZeroShotDetailsComponent
     return toReturn;
   }
 
+  checkIfManagedVersion() {
+    if (!ConfigManager.isInit()) {
+      timer(250).subscribe(() => this.checkIfManagedVersion());
+      return;
+    }
+    this.isManaged = ConfigManager.getIsManaged();
+  }
+
   ngOnDestroy() {
     this.subscriptions$.forEach((subscription) => subscription.unsubscribe());
     for (const e of this.stickyHeader) {
       this.stickyObserver.unobserve(e.nativeElement);
     }
-    NotificationService.unsubscribeFromNotification(this, this.project.id);
+    const projectId = this.project?.id ? this.project.id : this.activatedRoute.parent.snapshot.paramMap.get('projectId');
+    NotificationService.unsubscribeFromNotification(this, projectId);
+    CommentDataManager.unregisterAllCommentRequests(this);
   }
 
   ngAfterViewInit() {
@@ -169,7 +201,7 @@ export class ZeroShotDetailsComponent
       this.attributes = attributes;
       this.textAttributes = attributes.filter(a => a.dataType == 'TEXT');
     }));
-    return attributes$;
+    return attributes$.pipe(first());
   }
 
 
@@ -242,7 +274,7 @@ export class ZeroShotDetailsComponent
       this.colors.domain(labelIds);
     });
 
-    return vc;
+    return vc.pipe(first());
   }
 
   deleteInformationSource(projectId: string, informationSourceId: string) {
@@ -303,10 +335,8 @@ export class ZeroShotDetailsComponent
     if (text.length == 0) return;
     if (this.testerRequestedSomething) return;
     let labels;
-    if (this.customLabels.nativeElement.value != '') {
-      this.useTaskLabels = false;
-    }
-    if (this.useTaskLabels) {
+    const useTaskLabels = this.customLabels.nativeElement.value == '';
+    if (useTaskLabels) {
       labels = this.labelingTasks.get(this.zeroShotSettings.taskId).labels
         .filter(l => !this.zeroShotSettings.excludedLabels.includes(l.id))
         .map(l => l.name);
@@ -323,7 +353,6 @@ export class ZeroShotDetailsComponent
         });
         this.singleLineTesterResult = r.labels;
         this.testerRequestedSomething = false;
-        this.useTaskLabels = true;
       })
   }
 
@@ -332,11 +361,10 @@ export class ZeroShotDetailsComponent
     this.testerRequestedSomething = true;
     this.randomRecordTesterResult = null;
     let labels = null;
-    if (this.customLabels.nativeElement.value != '') {
-      this.useTaskLabels = false;
-    }
-    if (!this.useTaskLabels) labels = JSON.stringify(this.customLabels.nativeElement.value.split(",").map(l => l.trim()));
-    else if (this.useTaskLabels && this.zeroShotSettings.excludedLabels.length) {
+    const customLabelValue = this.customLabels.nativeElement.value;
+    const useTaskLabels = customLabelValue == '';
+    if (!useTaskLabels) labels = JSON.stringify(customLabelValue.split(",").map(l => l.trim()));
+    else if (useTaskLabels && this.zeroShotSettings.excludedLabels.length) {
       labels = JSON.stringify(this.labelingTasks.get(this.zeroShotSettings.taskId).labels
         .filter(l => !this.zeroShotSettings.excludedLabels.includes(l.id))
         .map(l => l.name));
@@ -362,7 +390,10 @@ export class ZeroShotDetailsComponent
 
   runZeroShotProject() {
     if (!this.canRunProject) return;
-    this.informationSourceApolloService.runZeroShotProject(this.project.id, this.informationSource.id).pipe(first()).subscribe();
+    this.canRunProject = false;
+    this.informationSourceApolloService.runZeroShotProject(this.project.id, this.informationSource.id).pipe(first()).subscribe(
+      () => this.informationSourceQuery$.refetch()
+    );
   }
 
   getLabelIdFromName(name: string): string {
@@ -443,5 +474,14 @@ export class ZeroShotDetailsComponent
 
   getHover(color) {
     return `hover:bg-${color}-200`
+  }
+
+  createModelsDownloadedStateList() {
+    if (this.zeroShotRecommendations !== undefined) {
+      this.zeroShotRecommendations.forEach(rec => {
+        const isDownloaded = this.downloadedModels.find(el => el.name === rec.configString);
+        this.modelsDownloadedState.push(isDownloaded != undefined ? true : false);
+      })
+    }
   }
 }

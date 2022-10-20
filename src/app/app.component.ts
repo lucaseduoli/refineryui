@@ -10,6 +10,8 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigManager } from './base/services/config-service';
 import { first } from 'rxjs/operators';
 import { ConfigApolloService } from './base/services/config/config-apollo.service';
+import { UserManager } from './util/user-manager';
+import { CommentDataManager } from './base/components/comment/comment-helper';
 
 @Component({
   selector: 'app-root',
@@ -49,6 +51,7 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   initalRequests() {
+    CommentDataManager.initManager(this.organizationService);
     this.configService.isManaged().pipe(first()).subscribe((v) => ConfigManager.initConfigManager(this.http, this.configService, v));
     this.configService.isDemo().pipe(first()).subscribe((v) => ConfigManager.setIsDemo(v));
     this.configService.isAdmin().pipe(first()).subscribe((v) => ConfigManager.setIsAdmin(v));
@@ -64,6 +67,8 @@ export class AppComponent implements OnDestroy, OnInit {
     }
     this.initializeIntercom();
     this.initRouterListener();
+    //caution! the first user request needs to run after the db creation since otherwise the backend will try to create an unasigned user
+    this.organizationService.getUserInfo().pipe(first()).subscribe((v) => UserManager.initUserManager(this.router, this.organizationService, v));
   }
 
   initializeIntercom() {
@@ -158,7 +163,7 @@ export class AppComponent implements OnDestroy, OnInit {
 
   handleWebsocketNotification(msgParts) {
     if (msgParts[1] == 'notification_created') {
-      if (msgParts[2] != this.loggedInUser.id) return;
+      if (msgParts[2] != this.loggedInUser?.id) return;
       if (this.refetchTimer) return;
       this.refetchTimer = timer(500).subscribe(() => {
         this.notificationsQuery$.resetLastResults();

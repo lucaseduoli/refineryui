@@ -3,12 +3,15 @@ import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, timer } from 'rxjs';
 import { first } from 'rxjs/operators';
-import { InformationSourceType, LabelingTask, LabelingTaskTarget, LabelSource } from 'src/app/base/enum/graphql-enums';
+import { CommentDataManager, CommentType } from 'src/app/base/components/comment/comment-helper';
+import { InformationSourceType, LabelingTask, LabelSource } from 'src/app/base/enum/graphql-enums';
+import { ConfigManager } from 'src/app/base/services/config-service';
 import { NotificationService } from 'src/app/base/services/notification.service';
 import { ProjectApolloService } from 'src/app/base/services/project/project-apollo.service';
 import { RouteService } from 'src/app/base/services/route.service';
 import { WeakSourceApolloService } from 'src/app/base/services/weak-source/weak-source-apollo.service';
 import { dateAsUTCDate } from 'src/app/util/helper-functions';
+import { UserManager } from 'src/app/util/user-manager';
 import { InformationSourceCodeLookup, InformationSourceExamples } from '../information-sources-code-lookup';
 
 @Component({
@@ -68,25 +71,34 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
   embeddingQuery$: any;
   description: string;
   selectionList: string = "";
+  isManaged: boolean = false;
   @ViewChild("modalCreateLF") modalCreateLF: ElementRef;
   @ViewChild("modalCreateAL") modalCreateAL: ElementRef;
   @ViewChild("modalCreateZS") modalCreateZS: ElementRef;
+  @ViewChild("modalCreateCL") modalCreateCL: ElementRef;
+
   @ViewChild("deleteSelectedHeuristics") deleteSelectedHeuristics: ElementRef;
+  downloadedModelsList$: any;
+  downloadedModelsQuery$: any;
+  downloadedModels: any[];
 
   constructor(
     private router: Router,
     private routeService: RouteService,
     private activatedRoute: ActivatedRoute,
     private projectApolloService: ProjectApolloService,
-    private informationSourceApolloService: WeakSourceApolloService
+    private informationSourceApolloService: WeakSourceApolloService,
   ) { }
 
   ngOnDestroy() {
     this.subscriptions$.forEach((subscription) => subscription.unsubscribe());
-    NotificationService.unsubscribeFromNotification(this, this.project.sid);
+    const projectId = this.project?.id ? this.project.id : this.activatedRoute.parent.snapshot.paramMap.get('projectId');
+    NotificationService.unsubscribeFromNotification(this, projectId);
+    CommentDataManager.unregisterAllCommentRequests(this);
   }
 
   ngOnInit(): void {
+    UserManager.checkUserAndRedirect(this);
     this.routeService.updateActivatedRoute(this.activatedRoute);
     const projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
     this.projectApolloService.getProjectById(projectId).pipe(first()).subscribe(project => this.project = project);
@@ -96,6 +108,11 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
       this.justClickedRun = false;
       this.selectedInformationSources = sources.filter((i) => i.selected);
       this.informationSourcesArray = sources;
+      this.informationSourcesArray.forEach(s => {
+        if (s.informationSourceType == 'ZERO_SHOT') s.routerLink = '../zero-shot/' + s.id;
+        else if (s.informationSourceType == 'CROWD_LABELER') s.routerLink = '../crowd-labeler/' + s.id;
+        else s.routerLink = './' + s.id
+      })
       const currentTaskFilter = this.labelingTasks && this.openTab != -1 ? this.labelingTasks[this.openTab] : null;
       this.toggleTabs(this.openTab, currentTaskFilter);
     }));
@@ -105,14 +122,35 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
     this.prepareCurrentWeakSupervisionInfo(projectId);
     this.prepareEmbeddingsRequest(projectId);
 
+    [this.downloadedModelsQuery$, this.downloadedModelsList$] = this.informationSourceApolloService.getModelProviderInfo();
+    this.subscriptions$.push(
+      this.downloadedModelsList$.subscribe((downloadedModels) => this.downloadedModels = downloadedModels));
 
     NotificationService.subscribeToNotification(this, {
       projectId: projectId,
       whitelist: this.getWhiteListNotificationService(),
       func: this.handleWebsocketNotification
     });
+    this.setUpCommentRequests(projectId);
+    this.checkIfManagedVersion();
+  }
+  private setUpCommentRequests(projectId: string) {
+    const requests = [];
+    requests.push({ commentType: CommentType.ATTRIBUTE, projectId: projectId });
+    requests.push({ commentType: CommentType.LABELING_TASK, projectId: projectId });
+    requests.push({ commentType: CommentType.HEURISTIC, projectId: projectId });
+    requests.push({ commentType: CommentType.EMBEDDING, projectId: projectId });
+    requests.push({ commentType: CommentType.LABEL, projectId: projectId });
+    CommentDataManager.registerCommentRequests(this, requests);
   }
 
+  checkIfManagedVersion() {
+    if (!ConfigManager.isInit()) {
+      timer(250).subscribe(() => this.checkIfManagedVersion());
+      return;
+    }
+    this.isManaged = ConfigManager.getIsManaged();
+  }
 
   prepareCurrentWeakSupervisionInfo(projectId: string) {
     [this.currentWeakSupervisionRunQuery$, this.currentWeakSupervisionRun$] = this.projectApolloService.getCurrentWeakSupervisionRun(projectId);
@@ -273,7 +311,28 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
       console.log('currently only possible to create labeling functions & classification');
     }
   }
+  createCrowdLabelerInformationSource(projectId: string) {
+    this.informationSourceApolloService
+      .createInformationSource(
+        projectId,
+        this.labelingTaskId,
+        this.functionName,
+        this.description,
+        "",
+        InformationSourceType.CROWD_LABELER
+      )
+      .subscribe((re) => {
+        const id = re['data']?.['createInformationSource']?.['informationSource']?.['id'];
+        if (id) {
+          this.router.navigate(["../crowd-labeler/" + id], {
+            relativeTo: this.activatedRoute,
+          });
+        } else {
+          console.log("can't find newly created id for CROWD_LABELER --> can't open");
+        }
+      });
 
+  }
   createZeroShotInformationSource(projectId: string) {
     const targetConfig = this.inputConfig.nativeElement.value;
     const labelingTaskId = this.labelingTasksSelect.nativeElement.options[this.labelingTasksSelect.nativeElement.selectedIndex].value;
@@ -342,7 +401,7 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
   areInformationSourcesSelected(informationSources: any[], onlyValid: boolean) {
     const selected = informationSources.filter((i) => i.selected).length;
     if (onlyValid) {
-      const selectedFinished = informationSources.filter((i) => i.selected && i?.state == 'FINISHED').length;
+      const selectedFinished = informationSources.filter((i) => i.selected && ['FINISHED', 'STARTED'].includes(i?.state)).length;
       return selected > 0 && selected == selectedFinished;
     }
     return selected > 0;
@@ -398,6 +457,8 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
       else if (type == InformationSourceType.ACTIVE_LEARNING) {
         this.functionName = "MyActiveLearner";
         this.filterEmbeddingsForCurrentTask();
+      } else if (type == InformationSourceType.CROWD_LABELER) {
+        this.functionName = "Crowd Heuristic";
       }
       else this.functionName = "Zero shot module";
     }
@@ -430,7 +491,7 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
     const numLabels = stats[0].label == '-' ? 0 : stats.length;
     const numLabelsPx = (numLabels * 70) + "px";
     let additionalPx = 0 + "px";
-    if(stats.length > 3) additionalPx = 20 + "px";
+    if (stats.length > 3) additionalPx = 20 + "px";
     return parseInt("88px", 10) + parseInt(numLabelsPx, 10) + parseInt(additionalPx, 10) + "px";
   }
 
@@ -494,8 +555,8 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
   }
 
   executeOption(value: string) {
-    switch(value) {
-      case 'Labeling function': 
+    switch (value) {
+      case 'Labeling function':
         this.modalCreateLF.nativeElement.checked = true;
         this.modalChangeForCreation(true, InformationSourceType.LABELING_FUNCTION);
         break;
@@ -505,7 +566,13 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
         break;
       case 'Zero-shot':
         this.modalCreateZS.nativeElement.checked = true;
+        this.modalChangeForCreation(true, InformationSourceType.ZERO_SHOT)
         break;
+      case 'Crowd labeling':
+        this.modalCreateCL.nativeElement.checked = true;
+        this.modalChangeForCreation(true, InformationSourceType.CROWD_LABELER)
+        break;
+
       case 'Select all':
         this.setAllInformationSources(true);
         break;
@@ -520,5 +587,10 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
         this.prepareSelectionList();
         break;
     }
+  }
+
+  checkIfModelIsDownloaded(modelName: string) {
+    const findModel = this.downloadedModels && this.downloadedModels.find(el => el.name === modelName);
+    return findModel !== undefined ? true : false;
   }
 }

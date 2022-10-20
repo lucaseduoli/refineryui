@@ -7,10 +7,13 @@ import { LabelingTask, LabelingTaskTarget, labelingTaskToString } from 'src/app/
 import { NotificationService } from 'src/app/base/services/notification.service';
 import { ProjectApolloService } from 'src/app/base/services/project/project-apollo.service';
 import { RouteService } from 'src/app/base/services/route.service';
-import { schemeCategory24 } from 'src/app/util/colors';
 import { DownloadState } from 'src/app/import/services/s3.enums';
 import { HttpClient } from '@angular/common/http';
 import { S3Service } from 'src/app/import/services/s3.service';
+import { WeakSourceApolloService } from 'src/app/base/services/weak-source/weak-source-apollo.service';
+import { ConfigManager } from 'src/app/base/services/config-service';
+import { UserManager } from 'src/app/util/user-manager';
+import { CommentDataManager, CommentType } from 'src/app/base/components/comment/comment-helper';
 
 @Component({
   selector: 'kern-project-settings',
@@ -103,7 +106,8 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     return this.attributesSchema.get('attributes') as FormArray;
   }
 
-  attributesArrayText: { id: string, name: string }[] = [];
+  attributesArrayTextUsableUploaded: { id: string, name: string }[] = [];
+  attributesArrayUsableUploaded: { id: string, name: string }[] = [];
   attributes;
   pKeyCheckTimer;
   pKeyValid: boolean = null;
@@ -117,6 +121,10 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
   }
   labelMap: Map<string, []> = new Map<string, []>();
   @ViewChild('modalInput', { read: ElementRef }) myModalnewRecordTask: ElementRef;
+  downloadedModelsList$: any;
+  downloadedModelsQuery$: any;
+  downloadedModels: any[];
+  isManaged: boolean = true;
 
   constructor(
     private routeService: RouteService,
@@ -125,7 +133,8 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     private router: Router,
     private formBuilder: FormBuilder,
     private http: HttpClient,
-    private s3Service: S3Service
+    private s3Service: S3Service,
+    private informationSourceApolloService: WeakSourceApolloService
   ) { }
 
   ngAfterViewInit() {
@@ -139,6 +148,7 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     }
   }
   ngOnInit(): void {
+    UserManager.checkUserAndRedirect(this);
     this.routeService.updateActivatedRoute(this.activatedRoute);
 
     const projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
@@ -147,12 +157,17 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
 
     NotificationService.subscribeToNotification(this, {
       projectId: projectId,
-      whitelist: ['tokenization', 'embedding', 'embedding_deleted', 'label_created', 'label_deleted', 'attributes_updated', 'labeling_task_deleted', 'labeling_task_updated', 'labeling_task_created', 'project_update', 'project_export'],
+      whitelist: ['tokenization', 'embedding', 'embedding_deleted', 'label_created', 'label_deleted', 'attributes_updated', 'labeling_task_deleted', 'labeling_task_updated', 'labeling_task_created', 'project_update', 'project_export', 'calculate_attribute'],
       func: this.handleWebsocketNotification
     });
+    this.setUpCommentRequests(projectId);
 
     this.requestPKeyCheck(projectId);
     this.checkProjectTokenization(projectId);
+
+    [this.downloadedModelsQuery$, this.downloadedModelsList$] = this.informationSourceApolloService.getModelProviderInfo();
+    this.subscriptions$.push(
+      this.downloadedModelsList$.subscribe((downloadedModels) => this.downloadedModels = downloadedModels));
 
     let preparationTasks$ = [];
     preparationTasks$.push(this.prepareAttributesRequest(projectId));
@@ -173,8 +188,24 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
         }
       })
     }
+    this.checkIfManagedVersion();
+  }
+  private setUpCommentRequests(projectId: string) {
+    const requests = [];
+    requests.push({ commentType: CommentType.LABELING_TASK, projectId: projectId });
+    requests.push({ commentType: CommentType.ATTRIBUTE, projectId: projectId });
+    requests.push({ commentType: CommentType.EMBEDDING, projectId: projectId });
+    requests.push({ commentType: CommentType.LABEL, projectId: projectId });
+    CommentDataManager.registerCommentRequests(this, requests);
   }
 
+  checkIfManagedVersion() {
+    if (!ConfigManager.isInit()) {
+      timer(250).subscribe(() => this.checkIfManagedVersion());
+      return;
+    }
+    this.isManaged = ConfigManager.getIsManaged();
+  }
 
   prepareEmbeddingFormGroup(attributes) {
     if (attributes.length > 0) {
@@ -271,18 +302,25 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
 
   prepareAttributesRequest(projectId: string): Observable<any> {
     let attributes$;
-    [this.attributesQuery$, attributes$] = this.projectApolloService.getAttributesByProjectId(projectId);;
+    [this.attributesQuery$, attributes$] = this.projectApolloService.getAttributesByProjectId(projectId, ['ALL']);
     this.subscriptions$.push(attributes$.subscribe((attributes) => {
       this.attributes = attributes;
-      this.attributesArrayText = [];
+      this.attributesArrayTextUsableUploaded = [];
+      this.attributesArrayUsableUploaded = [];
       this.attributesArray.clear();
       attributes.forEach((att) => {
         let group = this.formBuilder.group({
           id: att.id,
           name: att.name,
           dataType: att.dataType,
-          isPrimaryKey: att.isPrimaryKey
+          isPrimaryKey: att.isPrimaryKey,
+          userCreated: att.userCreated,
+          sourceCode: att.sourceCode,
+          state: att.state
         });
+        if (att.state == 'INITIAL') {
+          group.get('isPrimaryKey').disable();
+        }
         group.valueChanges.pipe(distinctUntilChanged()).subscribe(() => {
           let values = group.getRawValue(); //to ensure disabled will be returned as well          
           if (this.pKeyChanged()) this.requestPKeyCheck(this.project.id);
@@ -291,8 +329,13 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
             updateAttribute(this.project.id, values.id, values.dataType, values.isPrimaryKey).pipe(first()).subscribe();
         });
         this.attributesArray.push(group);
-        if (att.dataType == 'TEXT') {
-          this.attributesArrayText.push({ id: att.id, name: att.name });
+        if (att.state == 'UPLOADED' || att.state == 'USABLE' || att.state == 'AUTOMATICALLY_CREATED') {
+          if (att.dataType == 'TEXT') {
+            this.attributesArrayTextUsableUploaded.push({ id: att.id, name: att.name });
+            this.attributesArrayUsableUploaded.push({ id: att.id, name: att.name });
+          } else {
+            this.attributesArrayUsableUploaded.push({ id: att.id, name: att.name });
+          }
         }
       });
       const onlyTextAttributes = attributes.filter(a => a.dataType == 'TEXT');
@@ -504,7 +547,9 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
 
   ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) => subscription.unsubscribe());
-    NotificationService.unsubscribeFromNotification(this, this.project.id)
+    const projectId = this.project?.id ? this.project.id : this.activatedRoute.parent.snapshot.paramMap.get('projectId');
+    NotificationService.unsubscribeFromNotification(this, projectId);
+    CommentDataManager.unregisterAllCommentRequests(this);
   }
 
   updateProjectNameAndDescription(projectId: string, newName: string, newDescription: string) {
@@ -521,6 +566,7 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
   labelingTasksDropdownValues() {
     if (this.labelingTasksDropdownArray.length == 0) {
       for (let t of Object.values(LabelingTask)) {
+        if (t == LabelingTask.NOT_USEABLE) continue;
         this.labelingTasksDropdownArray.push({
           name: labelingTaskToString(t),
           value: t,
@@ -740,6 +786,8 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     } else if (msgParts[1] == 'project_export') {
       this.downloadPrepareMessage = DownloadState.NONE;
       this.requestProjectExportCredentials();
+    } else if (msgParts[1] == 'calculate_attribute') {
+      this.attributesQuery$.refetch();
     }
   }
 
@@ -974,5 +1022,26 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     if (!currentData || !currentData[this.project.id]) return;
     delete currentData[this.project.id];
     localStorage.setItem('projectOverviewData', JSON.stringify(currentData));
+  }
+
+  checkIfModelIsDownloaded(modelName: string) {
+    const findModel = this.downloadedModels && this.downloadedModels.find(el => el.name === modelName);
+    return findModel !== undefined ? true : false;
+  }
+
+  createUserAttribute() {
+    this.projectApolloService
+      .createUserAttribute(this.project.id)
+      .pipe(first())
+      .subscribe((res) => {
+        const id = res?.data?.createUserAttribute.attributeId;
+        if (id) {
+          localStorage.setItem("isNewAttribute", "true");
+          this.router.navigate(['../attributes/' + id],
+            {
+              relativeTo: this.activatedRoute
+            });
+        }
+      });
   }
 }

@@ -1,9 +1,10 @@
 import {
   Component,
   HostListener,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 import { debounceTime, distinctUntilChanged, first } from 'rxjs/operators';
 import { RouteService } from 'src/app/base/services/route.service';
 import { ActivatedRoute, Router, Event, NavigationEnd } from '@angular/router';
@@ -12,6 +13,9 @@ import { FormControl } from '@angular/forms';
 import { RecordApolloService } from 'src/app/base/services/record/record-apollo.service';
 import { ProjectApolloService } from 'src/app/base/services/project/project-apollo.service';
 import { bool } from 'aws-sdk/clients/signer';
+import { labelingHuddle, labelingLinkData, parseLabelingLinkData } from 'src/app/labeling/components/helper/labeling-helper';
+import { UserManager } from 'src/app/util/user-manager';
+import { CommentDataManager, CommentType } from 'src/app/base/components/comment/comment-helper';
 
 
 @Component({
@@ -19,7 +23,7 @@ import { bool } from 'aws-sdk/clients/signer';
   templateUrl: './record-ide.component.html',
   styleUrls: ['./record-ide.component.scss'],
 })
-export class RecordIDEComponent implements OnInit {
+export class RecordIDEComponent implements OnInit, OnDestroy {
 
   codeFormCtrl = new FormControl('');
   editorOptions = { theme: 'vs-light', language: 'python' };
@@ -27,23 +31,18 @@ export class RecordIDEComponent implements OnInit {
 
   project: Project;
   project$: any;
-  session: any;
   subscriptions$: Subscription[] = [];
   output: string;
   loading: bool;
-  labelingUrl: string;
+  // labelingUrl: string;
   screenHeight: string;
-  position;
-  sessionData: {
-    recordIds: string[],
-    sessionId: string,
-    partial: boolean,
-    projectId: string,
-    currentPos: number
-  };
+  huddleData: labelingHuddle;
+  linkData: labelingLinkData;
+
   snakeActive: boolean = false;
   vertical: boolean = true;
-
+  position: number;
+  debounceTimer;
 
   constructor(
     private routeService: RouteService,
@@ -52,19 +51,26 @@ export class RecordIDEComponent implements OnInit {
     private projectApolloService: ProjectApolloService,
     private router: Router,
   ) {
+
     this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationEnd) {
-        this.setLabelingUrlAndPos()
+        const labelingUrlFull = this.activatedRoute.snapshot['_routerState'].url;
+        const posIndex = /\?pos/.exec(labelingUrlFull).index;
+        this.position = parseInt(labelingUrlFull.substring(posIndex + 5)); // get rid of "?pos=" (5 chars)
       }
     });
+
+  }
+  ngOnDestroy(): void {
+    CommentDataManager.unregisterAllCommentRequests(this);
   }
 
   ngOnInit(): void {
-    this.sessionData = JSON.parse(localStorage.getItem("sessionData"));
+    UserManager.checkUserAndRedirect(this);
+    this.huddleData = JSON.parse(localStorage.getItem("huddleData"));
     this.routeService.updateActivatedRoute(this.activatedRoute);
-    this.session = this.activatedRoute.snapshot.paramMap.get("sessionId");
-    const projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
-    this.prepareProject(projectId);
+    this.linkData = parseLabelingLinkData(this.activatedRoute);
+    this.prepareProject(this.linkData.projectId);
     const existingCode = localStorage.getItem("ideCode");
     if (existingCode) this.code = existingCode;
     const horizontal = JSON.parse(localStorage.getItem("ideHorizontal"));
@@ -72,6 +78,14 @@ export class RecordIDEComponent implements OnInit {
       this.vertical = !horizontal;
     }
     this.changeScreenSize();
+    const projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
+    this.setUpCommentRequests(projectId);
+  }
+  private setUpCommentRequests(projectId: string) {
+    const requests = [];
+    requests.push({ commentType: CommentType.ATTRIBUTE, projectId: projectId });
+    requests.push({ commentType: CommentType.KNOWLEDGE_BASE, projectId: projectId });
+    CommentDataManager.registerCommentRequests(this, requests);
   }
 
   initEditor() {
@@ -90,12 +104,6 @@ export class RecordIDEComponent implements OnInit {
     location.reload();
   }
 
-  setLabelingUrlAndPos(): void {
-    const labelingUrlFull = this.activatedRoute.snapshot['_routerState'].url.replace("record-ide", "labeling");
-    const posIndex = /\?pos/.exec(labelingUrlFull).index;
-    this.position = parseInt(labelingUrlFull.substring(posIndex + 5)); // get rid of "?pos=" (5 chars)
-    this.labelingUrl = labelingUrlFull.substring(0, posIndex);
-  }
 
   prepareProject(projectId: string) {
     this.project$ = this.projectApolloService.getProjectById(projectId);
@@ -111,10 +119,14 @@ export class RecordIDEComponent implements OnInit {
       this.snakeActive = true;
     } else {
       this.loading = true;
-      const recordId = this.sessionData.recordIds[this.position - 1]
-      this.recordApolloService.runRecordIDE(this.project.id, recordId, this.code).subscribe(({ data, loading }) => {
-        this.output = data["runRecordIde"];
-        this.loading = false;
+      const recordId = this.huddleData.recordIds[this.linkData.requestedPos - 1]
+
+      if (this.debounceTimer) this.debounceTimer.unsubscribe();
+      this.debounceTimer = timer(400).subscribe(() => {
+        this.recordApolloService.runRecordIDE(this.project.id, recordId, this.code).subscribe(({ data, loading }) => {
+          this.output = data["runRecordIde"];
+          this.loading = false;
+        });
       });
     }
   }
@@ -147,19 +159,24 @@ export class RecordIDEComponent implements OnInit {
   }
 
   goToLabelingPage() {
-    this.router.navigate(["projects", this.project.id, "labeling", this.session], { queryParams: { pos: this.position } });
+    this.router.navigate(["projects", this.project.id, "labeling", this.linkData.id], { queryParams: { pos: this.linkData.requestedPos, type: 'SESSION' } });
   }
 
   nextRecord() {
     this.clearIde();
-    this.router.navigate(["projects", this.project.id, "record-ide", this.session], { queryParams: { pos: Math.min(this.position + 1, this.sessionData.recordIds.length) } });
-    setTimeout(() => this.runRecordIde(), 200);
+    this.linkData.requestedPos++;
+    this.router.navigate(["projects", this.project.id, "record-ide", this.linkData.id],
+      { queryParams: { pos: Math.min(this.linkData.requestedPos, this.huddleData.recordIds.length) } });
+
+    this.runRecordIde();
   }
 
   prevRecord() {
     this.clearIde();
-    this.router.navigate(["projects", this.project.id, "record-ide", this.session], { queryParams: { pos: Math.max(this.position - 1, 1) } });
-    setTimeout(() => this.runRecordIde(), 200);
+    this.linkData.requestedPos = Math.max(this.linkData.requestedPos - 1, 1);
+    this.router.navigate(["projects", this.project.id, "record-ide", this.linkData.id], { queryParams: { pos: this.linkData.requestedPos, type: 'SESSION' } });
+
+    this.runRecordIde();
   }
 
 }

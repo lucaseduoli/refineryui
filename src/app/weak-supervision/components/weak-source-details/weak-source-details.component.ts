@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
-import { first } from 'rxjs/operators';
+import { first, mergeMap } from 'rxjs/operators';
 import { ProjectApolloService } from 'src/app/base/services/project/project-apollo.service';
 import { RouteService } from 'src/app/base/services/route.service';
 import { WeakSourceApolloService } from 'src/app/base/services/weak-source/weak-source-apollo.service';
@@ -18,13 +18,16 @@ import {
   startWith,
   distinctUntilChanged,
 } from 'rxjs/operators';
-import { combineLatest, Subscription, timer } from 'rxjs';
+import { combineLatest, forkJoin, Subscription, timer } from 'rxjs';
 import { InformationSourceType, informationSourceTypeToString, LabelingTask, LabelSource } from 'src/app/base/enum/graphql-enums';
 import { InformationSourceCodeLookup, InformationSourceExamples } from '../information-sources-code-lookup';
 import { dateAsUTCDate } from 'src/app/util/helper-functions';
 import { NotificationService } from 'src/app/base/services/notification.service';
 import { OrganizationApolloService } from 'src/app/base/services/organization/organization-apollo.service';
 import { schemeCategory24 } from 'src/app/util/colors';
+import { UserManager } from 'src/app/util/user-manager';
+import { RecordApolloService } from 'src/app/base/services/record/record-apollo.service';
+import { CommentDataManager, CommentType } from 'src/app/base/components/comment/comment-helper';
 
 @Component({
   selector: 'kern-weak-source-details',
@@ -59,6 +62,7 @@ export class WeakSourceDetailsComponent
   informationSource: any;
   subscriptions$: Subscription[] = [];
   lastTask$: any;
+  lastTaskLogs: string[];
   lastTaskQuery$: any;
   labelingTasksQuery$: any;
   labelingTasks: Map<string, any> = new Map<string, any>();
@@ -83,6 +87,10 @@ export class WeakSourceDetailsComponent
 
   stickyObserver: IntersectionObserver;
   isHeaderNormal: boolean = true;
+  currentRecordIdx: number = -1;
+  sampleRecords: any;
+  selectedAttribute: string = '';
+
   constructor(
     private router: Router,
     private routeService: RouteService,
@@ -90,6 +98,7 @@ export class WeakSourceDetailsComponent
     private projectApolloService: ProjectApolloService,
     private informationSourceApolloService: WeakSourceApolloService,
     private organizationService: OrganizationApolloService,
+    private recordApolloService: RecordApolloService,
   ) { }
 
   getTargetTaskLabels() {
@@ -98,6 +107,7 @@ export class WeakSourceDetailsComponent
   }
 
   ngOnInit(): void {
+    UserManager.checkUserAndRedirect(this);
     this.routeService.updateActivatedRoute(this.activatedRoute);
     this.organizationService.getUserInfo().pipe(first()).subscribe((user) => this.loggedInUser = user);
     const projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
@@ -111,13 +121,14 @@ export class WeakSourceDetailsComponent
     tasks$.push(project$.pipe(first()));
 
     this.subscriptions$.push(project$.subscribe((project) => this.project = project));
-    combineLatest(tasks$).subscribe(() => this.prepareInformationSource(projectId));
+    forkJoin(tasks$).subscribe(() => this.prepareInformationSource(projectId));
 
     NotificationService.subscribeToNotification(this, {
       projectId: projectId,
       whitelist: this.getWhiteListNotificationService(),
       func: this.handleWebsocketNotification
     });
+    this.setUpCommentRequests(projectId, isType);
   }
 
   getWhiteListNotificationService(): string[] {
@@ -128,13 +139,25 @@ export class WeakSourceDetailsComponent
     toReturn.push(...['embedding_deleted', 'embedding']);
     return toReturn;
   }
+  private setUpCommentRequests(projectId: string, isType: string) {
+    const requests = [];
+    requests.push({ commentType: CommentType.ATTRIBUTE, projectId: projectId });
+    requests.push({ commentType: CommentType.LABELING_TASK, projectId: projectId });
+    requests.push({ commentType: CommentType.HEURISTIC, projectId: projectId });
+    if (isType == 'ACTIVE_LEARNING') requests.push({ commentType: CommentType.EMBEDDING, projectId: projectId });
+    else requests.push({ commentType: CommentType.KNOWLEDGE_BASE, projectId: projectId });
+    requests.push({ commentType: CommentType.LABEL, projectId: projectId });
+    CommentDataManager.registerCommentRequests(this, requests);
+  }
 
   ngOnDestroy() {
     this.subscriptions$.forEach((subscription) => subscription.unsubscribe());
     for (const e of this.stickyHeader) {
       this.stickyObserver.unobserve(e.nativeElement);
     }
-    NotificationService.unsubscribeFromNotification(this, this.project.id);
+    const projectId = this.project?.id ? this.project.id : this.activatedRoute.parent.snapshot.paramMap.get('projectId');
+    NotificationService.unsubscribeFromNotification(this, projectId);
+    CommentDataManager.unregisterAllCommentRequests(this);
   }
 
   ngAfterViewInit() {
@@ -259,7 +282,7 @@ export class WeakSourceDetailsComponent
       }
       this.filterEmbeddingsForCurrentTask();
     });
-    return vc;
+    return vc.pipe(first());
   }
 
   prepareSourceCode(projectId: string, informationSource) {
@@ -280,6 +303,7 @@ export class WeakSourceDetailsComponent
         projectId,
         informationSource.lastTask.id
       );
+      this.subscriptions$.push(this.lastTask$.subscribe((task) => this.lastTaskLogs = task.logs));
     } else {
       this.lastTask$ = null;
     }
@@ -293,7 +317,7 @@ export class WeakSourceDetailsComponent
       this.filterEmbeddingsForCurrentTask();
     }
     ));
-    return vc;
+    return vc.pipe(first());
   }
   filterEmbeddingsForCurrentTask() {
     if (!this.embeddings || !this.labelingTasks.size || !this.labelingTaskControl.value) return;
@@ -599,7 +623,70 @@ export class WeakSourceDetailsComponent
       attributes.sort((a, b) => a.relativePosition - b.relativePosition);
       this.attributes = attributes;
     }));
-    return attributes$;
+    return attributes$.pipe(first());
   }
 
+  getLabelingFunctionOn10Records(projectId: string) {
+    if (this.requestTimeOut) return;
+    if (this.hasUnsavedChanges()) {
+      console.log('Unsaved changes -- aborted!');
+      return;
+    }
+    this.justClickedRun = true;
+    this.informationSourceApolloService.getLabelingFunctionOn10Records(projectId, this.informationSource.id).pipe(first()).subscribe((sampleRecords) => {
+      this.sampleRecords = sampleRecords;
+      this.sampleRecords.records.forEach(record => {
+        record.fullRecordData = JSON.parse(record.fullRecordData);
+        if (this.labelingTasks.get(this.labelingTaskControl.value).taskType == 'MULTICLASS_CLASSIFICATION') {
+          const label = record.calculatedLabels.length > 0 ? record.calculatedLabels[1] : '-';
+          record.calculatedLabelsResult = {
+            label: {
+            label: label,
+            color: this.getColorForLabel(label),
+            count: 1,
+            displayAmount: false
+          }};
+        } else {
+          const resultDict = {};
+          if(record.calculatedLabels.length > 0) {
+            record.calculatedLabels.forEach(e => {
+              const label = this.getLabelFromExtractionResult(e);
+              if (!resultDict[label])  {
+                resultDict[label] = {
+                  label: label,
+                  color: this.getColorForLabel(label),
+                  count: 0
+                };
+              }
+              resultDict[label].count++;
+            });          
+            const displayAmount = Object.keys(resultDict).length > 1;
+            for (const key in resultDict) { 
+              resultDict[key].displayAmount = displayAmount || resultDict[key].count > 1;
+            }
+          } else {
+            resultDict['-'] = {
+              label: '-',
+              color: this.getColorForLabel('-'),
+              count: 1
+            };
+          }
+          record.calculatedLabelsResult = resultDict;
+        }
+      });
+      this.lastTaskLogs = this.sampleRecords.containerLogs;
+      this.justClickedRun = false;
+    });
+    this.requestTimeOut = true;
+    timer(1000).subscribe(() => this.requestTimeOut = false);
+  }
+
+  getColorForLabel(label: string) {
+    return label != '-' ? this.getTargetTaskLabels().find(el => el.name == label)?.color : 'gray';
+  }
+
+  getLabelFromExtractionResult(str: string) {
+    const array = str.split('\'');
+    return array.length == 1 ? array[0] : array[1];
+  }
 }

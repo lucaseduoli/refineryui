@@ -15,6 +15,7 @@ import { GraphQLModule } from './graphql.module';
 import { ProjectOverviewModule } from './project-overview/project-overview.module';
 import { WeakSupervisionModule } from './weak-supervision/weak-supervision.module';
 import { ZeroShotModule } from './zero-shot-details/zero-shot-details.module';
+import { CrowdLabelerModule } from './weak-supervision/components/crowd-labeler-details/crowd-labeler-details.module';
 import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { LabelingModule } from './labeling/labeling.module';
 import { KnowledgeBasesModule } from './knowledge-bases/knowledge-bases.module';
@@ -31,6 +32,9 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 
+import { ModelDownloadModule } from './model-download/model-download.module';
+import { ModelCallbackModule } from './model-callbacks/model-callbacks.module';
+import { UsersModule } from './users/users.module';
 
 @NgModule({
   declarations: [AppComponent, TableComponent, TableOptionsComponent, TbodyComponent],
@@ -45,15 +49,19 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
     BaseModule,
     DataModule,
     ProjectsModule,
+    UsersModule,
     ImportModule,
     MonitorModule,
     GraphQLModule,
     HttpClientModule,
     ProjectOverviewModule,
     WeakSupervisionModule,
+    CrowdLabelerModule,
     ZeroShotModule,
     LabelingModule,
     RecordIDEModule,
+    ModelCallbackModule,
+    ModelDownloadModule,
     NotificationCenterModule,
     MonacoEditorModule.forRoot(),
     KnowledgeBasesModule,

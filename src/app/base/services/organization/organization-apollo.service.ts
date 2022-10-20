@@ -55,10 +55,13 @@ export class OrganizationApolloService {
       .pipe(map((result) => result['data']['userInfo']));
   }
 
-  getOrganizationUsers() {
+  getOrganizationUsers(userRole: string = null) {
     return this.apollo
       .query({
         query: queries.GET_ORGANIZATION_USERS,
+        variables: {
+          userRole: userRole
+        }
       })
       .pipe(map((result) => result['data']['allUsers']));
   }
@@ -111,4 +114,69 @@ export class OrganizationApolloService {
       .pipe(map((result) => result['data']['canCreateLocalOrg']));
   }
 
+  requestComments(requestJson: string) {
+    return this.apollo
+      .query({
+        query: queries.REQUEST_COMMENTS,
+        variables: {
+          requested: requestJson
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .pipe(map((result) => JSON.parse(result['data']['getAllComments'])));
+  }
+
+  createComment(comment: string, xftype: string, xfkey: string, projectId: string = null, isPrivate: boolean = null) {
+    return this.apollo
+      .mutate({
+        mutation: mutations.CREATE_COMMENT,
+        variables: {
+          comment: comment,
+          xftype: xftype,
+          xfkey: xfkey,
+          projectId: projectId,
+          isPrivate: isPrivate,
+        },
+      })
+      .pipe(map((result) => result['data']['createComment']));
+  }
+
+
+  deleteComment(commentId: string, projectId: string = null) {
+    return this.apollo
+      .mutate({
+        mutation: mutations.DELETE_COMMENT,
+        variables: {
+          commentId: commentId,
+          projectId: projectId,
+        },
+      })
+      .pipe(map((result) => result['data']['deleteComment']));
+  }
+  updateComment(commentId: string, changesJson: string, projectId: string = null) {
+    return this.apollo
+      .mutate({
+        mutation: mutations.UPDATE_COMMENT,
+        variables: {
+          commentId: commentId,
+          changes: changesJson,
+          projectId: projectId,
+        },
+      })
+      .pipe(map((result) => result['data']['updateComment']));
+  }
+
+  allProjectIds() {
+    return this.apollo
+      .query({
+        query: queries.PROJECT_IDS,
+        fetchPolicy: 'no-cache',
+      }).pipe(
+        map((result) => {
+          return result['data']['allProjects']['edges'].map(
+            (wrapper) => wrapper['node']
+          );
+        })
+      );
+  }
 }

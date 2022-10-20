@@ -212,7 +212,8 @@ export class RecordApolloService {
     recordId: string,
     labelingTaskId: string,
     labelId: string,
-    asGoldStar: boolean = null
+    asGoldStar: boolean = null,
+    sourceId: string = null,
   ): Observable<any> {
     return this.apollo.mutate({
       mutation: mutations.ADD_CLASSIFICATION_LABELS_TO_RECORD,
@@ -221,7 +222,8 @@ export class RecordApolloService {
         recordId: recordId,
         labelingTaskId: labelingTaskId,
         labelId: labelId,
-        asGoldStar: asGoldStar
+        asGoldStar: asGoldStar,
+        sourceId: sourceId
       },
       refetchQueries: [
         {
@@ -249,7 +251,8 @@ export class RecordApolloService {
     endIdx: number,
     value: string,
     labelId: string,
-    asGoldStar: boolean = null
+    asGoldStar: boolean = null,
+    sourceId: string = null,
   ): Observable<any> {
     return this.apollo.mutate({
       mutation: mutations.ADD_EXTRACTION_LABEL_TO_RECORD,
@@ -261,7 +264,8 @@ export class RecordApolloService {
         tokenEndIndex: endIdx,
         value: value,
         labelId: labelId,
-        asGoldStar: asGoldStar
+        asGoldStar: asGoldStar,
+        sourceId: sourceId,
       },
       refetchQueries: [
         {

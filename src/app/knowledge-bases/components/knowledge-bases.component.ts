@@ -5,6 +5,8 @@ import { RouteService } from 'src/app/base/services/route.service';
 import { first, switchMap } from 'rxjs/operators';
 import { NotificationService } from 'src/app/base/services/notification.service';
 import { Subscription } from 'rxjs';
+import { UserManager } from 'src/app/util/user-manager';
+import { CommentDataManager, CommentType } from 'src/app/base/components/comment/comment-helper';
 
 @Component({
   selector: 'kern-knowledge-bases',
@@ -32,9 +34,11 @@ export class KnowledgeBasesComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions$.forEach((subscription) => subscription.unsubscribe());
     NotificationService.unsubscribeFromNotification(this, this.projectId);
+    CommentDataManager.unregisterAllCommentRequests(this);
   }
 
   ngOnInit(): void {
+    UserManager.checkUserAndRedirect(this);
     this.routeService.updateActivatedRoute(this.activatedRoute);
 
     this.projectId = this.activatedRoute.parent.snapshot.paramMap.get('projectId');
@@ -45,8 +49,13 @@ export class KnowledgeBasesComponent implements OnInit, OnDestroy {
       func: this.handleWebsocketNotification
     });
     this.subscriptions$.push(this.knowledgeBases$.subscribe(lists => this.lists = lists));
+    this.setUpCommentRequests(this.projectId);
   }
-
+  private setUpCommentRequests(projectId: string) {
+    const requests = [];
+    requests.push({ commentType: CommentType.KNOWLEDGE_BASE, projectId: projectId });
+    CommentDataManager.registerCommentRequests(this, requests);
+  }
   createKnowledgeBase(project_id) {
     this.knowledgeBaseApollo.createKnowledgeBase(project_id).pipe(first()).subscribe((result: any) => {
       const id = result?.data?.createKnowledgeBase.knowledgeBase.id;
@@ -98,8 +107,8 @@ export class KnowledgeBasesComponent implements OnInit, OnDestroy {
   }
 
   executeOption(value: string) {
-    switch(value) {
-      case 'Select all': 
+    switch (value) {
+      case 'Select all':
         this.setAllLookupLists(true);
         break;
       case 'Deselect all':
@@ -107,18 +116,18 @@ export class KnowledgeBasesComponent implements OnInit, OnDestroy {
         break;
       case 'Delete selected':
         this.prepareSelectionList();
-        break; 
+        break;
     }
   }
 
   setAllLookupLists(value) {
     this.checkboxes.forEach((element) => {
       element.nativeElement.checked = value;
-      
+
     });
     this.lists.forEach(list => {
-      if(value) {
-        if(this.selectedLookupLists.includes(list)) return;
+      if (value) {
+        if (this.selectedLookupLists.includes(list)) return;
         else this.selectedLookupLists.push(list);
       }
       else this.selectedLookupLists = [];
