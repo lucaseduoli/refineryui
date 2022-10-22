@@ -29,7 +29,7 @@
                     <div *ngIf="project$ | async as project">
                         <div *ngIf="project.id !== null">
                             <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Overview" class="tooltip tooltip-right relative z-50"
+                                <div data-tip="Overview" class="tooltip tooltip-right relative "
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./overview']" rel="noopener noreferrer" class="circle text-black"
                                         [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'overview') ? 'text-kerngreen': 'text-black'">
@@ -42,7 +42,7 @@
                                 </div>
                             </div> -->
                             <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Data Browser" class="tooltip tooltip-right relative z-50"
+                                <div data-tip="Data Browser" class="tooltip tooltip-right relative "
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./data']" rel="noopener noreferrer" class="circle text-black"
                                         [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'data') ? 'text-kerngreen': 'text-black'">
@@ -61,7 +61,7 @@
                                 </div>
                             </div> -->
                             <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Labeling" class="tooltip tooltip-right relative z-50"
+                                <div data-tip="Labeling" class="tooltip tooltip-right relative "
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./labeling']" rel="noopener noreferrer" class="circle text-black"
                                         [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'labeling') ? 'text-kerngreen': 'text-black'">
@@ -75,7 +75,7 @@
                                 </div>
                             </div> -->
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                              <div data-tip="table" class="tooltip tooltip-right relative z-50"
+                              <div data-tip="Table" class="tooltip tooltip-right relative "
                                   [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                   <a [routerLink]="['./table']" rel="noopener noreferrer" class="circle text-black"
                                       [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'table') ? 'text-kerngreen': 'text-black'">
@@ -87,7 +87,7 @@
                               </div>
                           </div>
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Models" class="tooltip tooltip-right relative z-50"
+                                <div data-tip="Models" class="tooltip tooltip-right relative "
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./heuristics']" rel="noopener noreferrer"
                                         class="circle text-black"
@@ -100,7 +100,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Settings" class="tooltip tooltip-right relative z-50">
+                                <div data-tip="Settings" class="tooltip tooltip-right relative ">
                                     <a [routerLink]="['./settings']" rel="noopener noreferrer" class="circle text-black"
                                         [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'settings') ? 'text-kerngreen': 'text-black'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
@@ -124,7 +124,7 @@
                 </div>
                 <div *ngIf="!isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12">
                     <button data-tip="Maximize screen" (click)="openFullscreen()"
-                        class="z-50 tooltip tooltip-right cursor-pointer">
+                        class=" tooltip tooltip-right cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" class="my-2 ctext-black icon icon-tabler icon-tabler-maximize"
                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -138,7 +138,7 @@
                 </div>
                 <div *ngIf="isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12">
                     <button data-tip="Minimize screen" (click)="closeFullscreen()"
-                        class="z-50 tooltip tooltip-right cursor-pointer">
+                        class=" tooltip tooltip-right cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" class="my-2 text-black icon icon-tabler icon-tabler-minimize"
                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
