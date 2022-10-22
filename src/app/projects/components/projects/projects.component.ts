@@ -128,6 +128,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         this.avatarUri = "assets/avatars/" + avatarSelector + ".png"
         if (this.organizationInactive) {
           this.createDefaultOrg(user);
+        } else {
+          this.createDefaultOrg(user);
+          // this.isManaged = ConfigManager.getIsManaged();
         }
       });
     this.checkIfDemoUser();
@@ -152,13 +155,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.subscriptions$.push(this.organizationApolloService.canCreateLocalOrg().pipe(first()).subscribe((canCreateOrg) => {
         this.canCreateOrg = canCreateOrg;
 
-        if (this.canCreateOrg) {
-          const localhostOrg = "localhost";
-
+        const localhostOrg = "localhost";
+        if (canCreateOrg) {
           this.organizationApolloService.createOrganization(localhostOrg).pipe(first()).subscribe(
             () => this.organizationApolloService.addUserToOrganization(user.mail, localhostOrg).pipe(first()).subscribe(
               () => location.reload()
             )
+          )
+        }
+        else {
+          this.organizationApolloService.addUserToOrganization(user.mail, localhostOrg).pipe(first()).subscribe(
+            () => location.reload()
           )
         }
       }));
