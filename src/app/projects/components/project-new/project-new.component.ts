@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Vali
 import { first } from 'rxjs/operators';
 import { AuthApiService } from 'src/app/base/services/auth-api.service';
 import { NotificationService } from 'src/app/base/services/notification.service';
+import { NotificationApolloService } from 'src/app/base/services/notification/notification-apollo.service';
 import { OrganizationApolloService } from 'src/app/base/services/organization/organization-apollo.service';
 import { ProjectApolloService } from 'src/app/base/services/project/project-apollo.service';
 import { ProjectStatus } from '../../enums/project-status.enum';
@@ -49,6 +50,7 @@ export class ProjectNewComponent implements OnInit {
     private formBuilder: FormBuilder,
     private organizationApolloService: OrganizationApolloService,
     private projectApolloService: ProjectApolloService,
+    private notificationApolloService: NotificationApolloService,
     private router: Router) { }
 
   ngOnInit(): void {
@@ -134,7 +136,7 @@ export class ProjectNewComponent implements OnInit {
     });
 
     if (this.submitted && this.hasFileUploaded) {
-      console.log("entrou");
+      //console.log("entrou");
       this.projectApolloService
         .createProject(this.createNewProject.get('projectTitle').value.trim(), this.createNewProject.get('description').value.trim())
         .pipe(first()).subscribe((p: Project) => {
@@ -143,6 +145,10 @@ export class ProjectNewComponent implements OnInit {
           this.uploadRecordsComponent.projectId = p.id;
           this.uploadRecordsComponent.selectedTokenizer = this.createNewProject.get('tokenizerForm').value;
           this.uploadRecordsComponent.submitUploadRecords();
+          this.router.navigate(['projects', p.id, 'settings']);
+          this.notificationApolloService.createNotification(p.id, "Project added successfully!")
+        .pipe(first())
+        .subscribe();
         });
     }
   }

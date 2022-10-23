@@ -300,7 +300,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       if (recordsInProject == 0) {
         this.router.navigate(['projects', projectId, 'settings']);
       } else {
-        this.router.navigate(['projects', projectId, 'overview']);
+        this.router.navigate(['projects', projectId, 'table']);
       }
     } else {
       this.router.navigate(['projects', projectId, 'labeling']);
