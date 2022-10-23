@@ -455,7 +455,7 @@ export class WeakSupervisionComponent implements OnInit, OnDestroy {
       if (type == InformationSourceType.LABELING_FUNCTION)
         this.functionName = "my_labeling_function";
       else if (type == InformationSourceType.ACTIVE_LEARNING) {
-        this.functionName = "MyActiveLearner";
+        this.functionName = "MyNewModel";
         this.filterEmbeddingsForCurrentTask();
       } else if (type == InformationSourceType.CROWD_LABELER) {
         this.functionName = "Crowd Heuristic";
