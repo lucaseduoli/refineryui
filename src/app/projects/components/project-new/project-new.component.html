@@ -3,7 +3,7 @@
     </kern-sidebar-pm>
     <!-- Content area -->
     <div class="h-full w-full flex-1 flex flex-col overflow-auto">
-        <kern-header 
+        <kern-header
             [user]="user$ | async"
             [organizationName]="organizationName"
             [avatarUri]="avatarUri"
@@ -41,9 +41,7 @@
 
                 <div class="form-control mt-6">
                     <label class="text-gray-500 text-sm font-normal">
-                        Please choose a tokenizer for your project. See our <a href="https://docs.kern.ai/docs/project-creation-and-data-upload"
-                            target="_blank"><span class="underline cursor-pointer">documentation</span></a> for further
-                        details.
+                        Please choose a tokenizer for your project.
                     </label>
                     <select formControlName="tokenizerForm"
                         class="select select-sm select-bordered w-full input input-sm"
