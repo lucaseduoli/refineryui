@@ -322,7 +322,7 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
           group.get('isPrimaryKey').disable();
         }
         group.valueChanges.pipe(distinctUntilChanged()).subscribe(() => {
-          let values = group.getRawValue(); //to ensure disabled will be returned as well          
+          let values = group.getRawValue(); //to ensure disabled will be returned as well
           if (this.pKeyChanged()) this.requestPKeyCheck(this.project.id);
           if (this.attributeChangedToText()) this.createAttributeTokenStatistics(this.project.id, values.id);
           this.projectApolloService.
@@ -463,11 +463,11 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     if (!this.isTaskNameUniqueCheck(taskName)) return;
     if (taskTargetId == "@@NO_ATTRIBUTE@@") taskTargetId = null;
     let labelingTaskType = LabelingTask.MULTICLASS_CLASSIFICATION;
-    if (
+    /*if (
       taskTargetId &&
       this.getAttributeArrayAttribute(taskTargetId, 'dataType') == 'TEXT'
     )
-      labelingTaskType = LabelingTask.NOT_SET;
+      labelingTaskType = LabelingTask.NOT_SET;*/ // Set Multiclass Classification as default
 
     this.projectApolloService.addLabelingTask(projectId, taskName.trim(), labelingTaskType, taskTargetId)
       .pipe(first()).subscribe();
@@ -567,6 +567,8 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     if (this.labelingTasksDropdownArray.length == 0) {
       for (let t of Object.values(LabelingTask)) {
         if (t == LabelingTask.NOT_USEABLE) continue;
+        if (t == LabelingTask.INFORMATION_EXTRACTION) continue;
+        if (t == LabelingTask.NOT_SET) continue; // Workaround: remove the things not used later
         this.labelingTasksDropdownArray.push({
           name: labelingTaskToString(t),
           value: t,
@@ -907,7 +909,7 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   getMoveRight(tblName: string): boolean {
-    //at some point a better grouping would be usefull 
+    //at some point a better grouping would be usefull
     switch (tblName) {
       case "embedding tensors":
       case "information sources payloads":
