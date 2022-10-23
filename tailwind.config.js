@@ -84,6 +84,9 @@ module.exports = {
       fuchsia: colors.fuchsia,
       pink: colors.pink,
       rose: colors.rose,
+      grayblue: "#79889b",
+      dotblue: "#6078b9",
+      logodarkgray: "#403d59",
       'logspace':{
         DEFAULT: "#2A2340",
         dark: "#1B1F24",

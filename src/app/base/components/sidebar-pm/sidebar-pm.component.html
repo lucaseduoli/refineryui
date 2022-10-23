@@ -5,11 +5,11 @@
                 <div class="flex-1 flex flex-col">
                     <div class="flex-shrink-0 bg-white-100 pt-4 flex items-center justify-center">
                         <a [routerLink]="['/projects']"
-                            class="inline-flex items-center p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kernindigo-dark"
+                            class="hover-home inline-flex items-center p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kernindigo-dark"
                             data-intercom-target="Home Button">
                             <svg xmlns="http://www.w3.org/2000/svg" height="40" width="auto" viewBox="0 0 30.77 54.36">
                               <defs>
-                              <style>.cls-1{fill:#403d59;}.cls-2{fill:#6078b9;}.cls-3{fill:#43405b;}</style>
+                              <style>.hover-home:hover .cls-1{fill:#403d59;}.hover-home:hover .cls-2{fill:#6078b9;}.hover-home:hover .cls-3{fill:#43405b;}.cls-1{fill:#d3d8e0;}.cls-2{fill:#6078b9;}.cls-3{fill:#d3d8e0;}</style>
                               </defs>
                               <g id="Camada_2" data-name="Camada 2"><g id="Camada_1-2" data-name="Camada 1">
                               <g id="Camada_2-2" data-name="Camada 2">
@@ -29,10 +29,10 @@
                     <div *ngIf="project$ | async as project">
                         <div *ngIf="project.id !== null">
                             <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Overview" class="tooltip tooltip-right relative "
+                                <div data-tip="Overview" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
-                                    <a [routerLink]="['./overview']" rel="noopener noreferrer" class="circle text-black"
-                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'overview') ? 'text-kerngreen': 'text-black'">
+                                    <a [routerLink]="['./overview']" rel="noopener noreferrer" class="circle"
+                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'overview') ? 'text-white': 'text-grayblue'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                             fill="currentColor">
                                             <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
@@ -42,10 +42,10 @@
                                 </div>
                             </div> -->
                             <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Data Browser" class="tooltip tooltip-right relative "
+                                <div data-tip="Data Browser" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
-                                    <a [routerLink]="['./data']" rel="noopener noreferrer" class="circle text-black"
-                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'data') ? 'text-kerngreen': 'text-black'">
+                                    <a [routerLink]="['./data']" rel="noopener noreferrer" class="circle"
+                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'data') ? 'text-white': 'text-grayblue'">
                                         <svg xmlns="http://www.w3.org/2000/svg"
                                             class="icon icon-tabler icon-tabler-icons" width="24" height="24"
                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -61,10 +61,10 @@
                                 </div>
                             </div> -->
                             <!-- <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Labeling" class="tooltip tooltip-right relative "
+                                <div data-tip="Labeling" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
-                                    <a [routerLink]="['./labeling']" rel="noopener noreferrer" class="circle text-black"
-                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'labeling') ? 'text-kerngreen': 'text-black'">
+                                    <a [routerLink]="['./labeling']" rel="noopener noreferrer" class="circle"
+                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'labeling') ? 'text-white': 'text-grayblue'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                             fill="currentColor">
                                             <path fill-rule="evenodd"
@@ -75,11 +75,11 @@
                                 </div>
                             </div> -->
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                              <div data-tip="Table" class="tooltip tooltip-right relative "
+                              <div data-tip="Table" class="tooltip tooltip-right relative z-50"
                                   [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
-                                  <a [routerLink]="['./table']" rel="noopener noreferrer" class="circle text-black"
-                                      [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'table') ? 'text-kerngreen': 'text-black'">
-                                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 22" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                  <a [routerLink]="['./table']" rel="noopener noreferrer" class="circle"
+                                      [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'table') ? 'text-white': 'text-grayblue'">
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 22" stroke-width="1.5" stroke="currentColor" class="w-5 h-9">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5" />
                                       </svg>
 
@@ -87,34 +87,30 @@
                               </div>
                           </div>
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Models" class="tooltip tooltip-right relative "
+                                <div data-tip="Models" class="tooltip tooltip-right relative z-50"
                                     [ngClass]="project.numDataScaleUploaded == 0 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'opacity-100 cursor-pointer'">
                                     <a [routerLink]="['./heuristics']" rel="noopener noreferrer"
-                                        class="circle text-black"
-                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'heuristics') ? 'text-kerngreen': 'text-black'">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 45 45"
-                                            fill="currentColor">
-                                            <path d="M7.35 29.2q-2.25 0-3.8-1.55Q2 26.1 2 23.85t1.55-3.8q1.55-1.55 3.8-1.55v-6.15q0-1.2.9-2.1.9-.9 2.1-.9h8.3q0-2.25 1.55-3.8Q21.75 4 24 4t3.8 1.55q1.55 1.55 1.55 3.8h8.3q1.2 0 2.1.9.9.9.9 2.1v6.15q2.25 0 3.8 1.55Q46 21.6 46 23.85t-1.55 3.8q-1.55 1.55-3.8 1.55V39q0 1.2-.9 2.1-.9.9-2.1.9h-27.3q-1.2 0-2.1-.9-.9-.9-.9-2.1Zm9.8-5q.85 0 1.425-.575.575-.575.575-1.425 0-.85-.575-1.425Q18 20.2 17.15 20.2q-.85 0-1.425.575-.575.575-.575 1.425 0 .85.575 1.425.575.575 1.425.575Zm13.7 0q.85 0 1.425-.575.575-.575.575-1.425 0-.85-.575-1.425-.575-.575-1.425-.575-.85 0-1.425.575-.575.575-.575 1.425 0 .85.575 1.425.575.575 1.425.575ZM15.6 33.75h16.8v-3H15.6ZM10.35 39h27.3V12.35h-27.3Zm0 0V12.35 39Z"/>
-                                        </svg>
+                                        class="circle"
+                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'heuristics') ? 'text-white': 'text-grayblue'">
+                                        <span class="material-symbols-sharp text-3xl">
+                                          model_training
+                                          </span>
                                     </a>
                                 </div>
                             </div>
                             <div class="flex items-center justify-center overflow-visible mt-10 2xl:mt-12">
-                                <div data-tip="Settings" class="tooltip tooltip-right relative ">
-                                    <a [routerLink]="['./settings']" rel="noopener noreferrer" class="circle text-black"
-                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'settings') ? 'text-kerngreen': 'text-black'">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                            fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
-                                                clip-rule="evenodd" />
-                                        </svg>
+                                <div data-tip="Settings" class="tooltip tooltip-right relative z-50">
+                                    <a [routerLink]="['./settings']" rel="noopener noreferrer" class="circle"
+                                        [ngClass]="matchRouteAndMenu((activatedRoute$ | async), 'settings') ? 'text-white': 'text-grayblue'">
+                                        <span class="material-symbols-sharp text-3xl">
+                                          settings
+                                          </span>
                                     </a>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-center overflow-visible mt-6 text-black">
+                            <div class="flex items-center justify-center overflow-visible mt-6 text-grayblue">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="20px" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"
                                     preserveAspectRatio="none">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
                                 </svg>
@@ -122,32 +118,20 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12">
+                <div *ngIf="!isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12 mb-2 text-grayblue">
                     <button data-tip="Maximize screen" (click)="openFullscreen()"
-                        class=" tooltip tooltip-right cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="my-2 ctext-black icon icon-tabler icon-tabler-maximize"
-                            width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M4 8v-2a2 2 0 0 1 2 -2h2"></path>
-                            <path d="M4 16v2a2 2 0 0 0 2 2h2"></path>
-                            <path d="M16 4h2a2 2 0 0 1 2 2v2"></path>
-                            <path d="M16 20h2a2 2 0 0 0 2 -2v-2"></path>
-                        </svg>
+                        class="z-50 tooltip tooltip-right cursor-pointer">
+                        <span class="material-symbols-sharp text-3xl">
+                          fullscreen
+                          </span>
                     </button>
                 </div>
-                <div *ngIf="isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12">
+                <div *ngIf="isFullscreen" class="flex items-center justify-center mt-10 2xl:mt-12 mb-2 text-grayblue">
                     <button data-tip="Minimize screen" (click)="closeFullscreen()"
-                        class=" tooltip tooltip-right cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="my-2 text-black icon icon-tabler icon-tabler-minimize"
-                            width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M15 19v-2a2 2 0 0 1 2 -2h2"></path>
-                            <path d="M15 5v2a2 2 0 0 0 2 2h2"></path>
-                            <path d="M5 15h2a2 2 0 0 1 2 2v2"></path>
-                            <path d="M5 9h2a2 2 0 0 0 2 -2v-2"></path>
-                        </svg>
+                        class="z-50 tooltip tooltip-right cursor-pointer">
+                        <span class="material-symbols-sharp text-3xl">
+                          fullscreen_exit
+                          </span>
                     </button>
                 </div>
             </div>
