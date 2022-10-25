@@ -20,7 +20,7 @@
                                         <th scope="col"
                                             class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
                                             Data Type</th>
-                                        <th scope="col"
+                                        <!--<th scope="col"
                                             class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
                                             <div
                                                 class="flex flex-row flex-nowrap items-center justify-center leading-3">
@@ -52,7 +52,7 @@
                                                     </ng-template>
                                                 </div>
                                             </div>
-                                        </th>
+                                        </th>-->
                                         <th scope="col"
                                             class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
                                             State
@@ -78,11 +78,11 @@
                                                 </option>
                                             </select>
                                         </td>
-                                        <td class="whitespace-nowrap text-center px-3 py-2 text-sm text-gray-500">
+                                        <!--<td class="whitespace-nowrap text-center px-3 py-2 text-sm text-gray-500">
                                             <label class="cursor-pointer">
                                                 <input formControlName="isPrimaryKey" type="checkbox">
                                             </label>
-                                        </td>
+                                        </td>-->
                                         <td class="whitespace-nowrap text-center px-3 py-2 text-sm text-gray-500">
                                             <kern-heuristic-statuses [status]="attributeContainer.get('state').value"
                                                 page="attributes" initialCaption="Needs execution">
@@ -568,7 +568,7 @@
                             </div>
                         </ng-template>
                     </div>
-                    <div class="tooltip tooltip-right"
+                    <!--<div class="tooltip tooltip-right"
                         [attr.data-tip]="!isManaged ? 'Check out our hosted version to use this function' : 'See which models are downloaded'">
                         <button
                             class="ml-1 inline-block items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-semibold rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none cursor-pointer"
@@ -588,7 +588,7 @@
                                 See downloaded models
                             </span>
                         </button>
-                    </div>
+                    </div>-->
 
                 </div>
             </div>
