@@ -278,14 +278,14 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   checkForceHiddenHandles() {
-    const granularity = this.embeddingCreationFormGroup.get('granularity').value;
+    const granularity = this.granularityTypesArray[0].value; // fixing granularity to attribute
     const attId = this.embeddingCreationFormGroup.get('targetAttribute').value;
 
     const suggestionList = this.embeddingHandlesMap.get(attId)
     for (let element of suggestionList) {
       element.forceHidden = true;
       if ((granularity == 'ON_ATTRIBUTE' && element.applicability?.attribute)
-        || (granularity == 'ON_TOKEN' && element.applicability?.token)) {
+        /*|| (granularity == 'ON_TOKEN' && element.applicability?.token)*/) { // no need for token logic
         element.forceHidden = false;
       }
     }
@@ -690,7 +690,7 @@ export class ProjectSettingsComponent implements OnInit, OnDestroy, AfterViewIni
     if (!this.canCreateEmbedding()) return;
     const embeddingHandle = this.embeddingCreationFormGroup.get("embeddingHandle").value;
     const attributeId = this.embeddingCreationFormGroup.get("targetAttribute").value;
-    const granularity = this.embeddingCreationFormGroup.get("granularity").value;
+    const granularity = this.granularityTypesArray[0].value; // fixing granularity to attribute
 
     this.projectApolloService.createEmbedding(projectId, attributeId, embeddingHandle, granularity.substring(3)).pipe(first()).subscribe();
     modalInputToClose.checked = false;

@@ -473,8 +473,7 @@
                                     <div class="tooltip tooltip-right" data-tip="Choose attribute that will be encoded">
                                         <span class="card-title mb-0 label-text flex"><span
                                                 class="cursor-help underline"
-                                                style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Target
-                                                Attribute</span></span>
+                                                style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Field</span></span>
                                     </div>
                                     <select formControlName="targetAttribute"
                                         class="select select-bordered select-sm max-w-xs"
@@ -484,7 +483,7 @@
                                             {{attribute.name}}
                                         </option>
                                     </select>
-                                    <div class="tooltip tooltip-right"
+                                    <!--<div class="tooltip tooltip-right"
                                         data-tip="One embedding per record vs. per token">
                                         <span class="card-title mb-0 label-text flex"><span
                                                 class="cursor-help underline"
@@ -497,11 +496,11 @@
                                             [value]="granularity.value">
                                             {{granularity.name}}
                                         </option>
-                                    </select>
+                                    </select>-->
                                     <div class="tooltip tooltip-right" data-tip="Name of your Hugging Face model">
                                         <span class="card-title mb-0 label-text flex"><span
                                                 class="cursor-help underline"
-                                                style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Configuration</span></span>
+                                                style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Model</span></span>
                                     </div>
                                     <div class="dropdown"
                                         data-intercom-target="Settings Page Embedding Mask Handle Selector With Suggestions"
@@ -611,7 +610,7 @@
                                         <tr>
                                             <th scope="col"
                                                 class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
-                                                Target</th>
+                                                Field</th>
                                             <th scope="col"
                                                 class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
                                                 Name</th>
@@ -833,7 +832,7 @@
                         style="grid-template-columns: max-content auto;">
                         <div class="tooltip tooltip-right" data-tip="Choose attribute to be labeled">
                             <span class="cursor-help card-title mb-0 label-text flex"><span class="underline"
-                                    style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Target
+                                    style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Field
                                   </span></span>
                         </div>
                         <select #labelingTaskTarget class="select select-bordered select-sm">
