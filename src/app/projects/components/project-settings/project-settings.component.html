@@ -608,9 +608,9 @@
                                 <table formArrayName="labelingTasks" class="min-w-full divide-y divide-gray-300">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th scope="col"
+                                            <!--<th scope="col"
                                                 class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
-                                                Field</th>
+                                                Field</th>-->
                                             <th scope="col"
                                                 class="px-3 py-2 text-center text-xs font-medium uppercase tracking-wide text-gray-500">
                                                 Name</th>
@@ -628,11 +628,11 @@
                                     <tbody class="divide-y divide-gray-200">
                                         <tr *ngFor="let labelingTaskContainer of labelingTasksArray.controls; let j = index"
                                             [ngClass]="j%2!=0 ? 'bg-gray-50':'bg-white'" [formGroupName]="j">
-                                            <td class="whitespace-nowrap text-center px-3 py-2 text-sm text-gray-500">
+                                            <!--<td class="whitespace-nowrap text-center px-3 py-2 text-sm text-gray-500">
                                                 {{labelingTaskContainer.get("targetName").value}}
-                                            </td>
+                                            </td>-->
                                             <td class="whitespace-nowrap text-center px-3 py-2 text-sm text-gray-500">
-                                                <p class="break-words w-52 cursor-pointer"
+                                                <p class="break-words cursor-pointer"
                                                     [ngClass]="labelingTaskContainer.get('nameOpen').value?'hidden':null"
                                                     (click)="openTaskName(labelingTaskContainer)">
                                                     {{labelingTaskContainer.get("name").value}}</p>
@@ -830,12 +830,12 @@
                         Afterward, you can select the label task type depending on the target type</div>
                     <div class="grid grid-cols-2 gap-2 items-center max-w-sm"
                         style="grid-template-columns: max-content auto;">
-                        <div class="tooltip tooltip-right" data-tip="Choose attribute to be labeled">
+                        <div class="tooltip tooltip-right hidden" data-tip="Choose attribute to be labeled">
                             <span class="cursor-help card-title mb-0 label-text flex"><span class="underline"
                                     style="text-decoration-style: dotted;text-underline-offset: 2px;text-decoration-color: #22c55e">Field
                                   </span></span>
                         </div>
-                        <select #labelingTaskTarget class="select select-bordered select-sm">
+                        <select #labelingTaskTarget class="select select-bordered select-sm hidden">
                             <option value="@@NO_ATTRIBUTE@@" selected="selected">Full Record</option>
                             <option *ngFor="let attribute of attributesArrayUsableUploaded" [value]="attribute.id">
                                 {{attribute.name}}
